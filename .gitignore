@@ -1,5 +1,4 @@
 node_modules/
-.next/
 .astro/
 .vite-cache/
 .vite-cache-build/
@@ -13,20 +12,6 @@ build/
 .env
 .env.*
 !.env.example
-
-# Legacy VPS/Next files kept locally, not needed for Cloudflare Astro build
-app/
-Dockerfile
-compose.yaml
-.dockerignore
-next-env.d.ts
-next.config.mjs
-proxy.ts
-memory.md
-README.md
-CLOUDFLARE_MIGRATION_PLAN.md
-FEATURE_BASELINE_FILMBLUESIA.md
-eslint.config.mjs
 
 npm-debug.log*
 yarn-debug.log*

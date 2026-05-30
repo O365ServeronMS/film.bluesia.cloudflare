@@ -7,10 +7,10 @@ import { searchMovies } from "@/lib/ophim";
 
 const q = Astro.url.searchParams.get("q") || "";
 const page = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
-const data = q ? await searchMovies(q, page, 30) : { title: "Tim kiem", items: [], page };
+const data = q ? await searchMovies(q, page, 30) : { title: "Tìm kiếm", items: [], page };
 ---
 
-<BaseLayout title={`${q ? data.title : "Tim kiem"} - Bluesia Cinema`}>
+<BaseLayout title={`${q ? data.title : "Tìm kiếm"} - Bluesia Cinema`}>
   <header class="sticky top-0 z-40 border-b border-white/5 bg-[#07090f]/90 px-4 py-4 backdrop-blur-xl">
     <div class="flex items-center gap-3">
       <SearchSuggest client:load initialQuery={q} autoFocus />
@@ -21,8 +21,8 @@ const data = q ? await searchMovies(q, page, 30) : { title: "Tim kiem", items: [
   </header>
 
   <section class="px-4 pt-6">
-    <h1 class="text-3xl font-black tracking-tight">{q ? data.title : "Ban muon xem gi?"}</h1>
-    <p class="mt-1 text-sm text-zinc-400">Nhap ten phim, ten goc hoac tu khoa de tim nhanh.</p>
+    <h1 class="text-3xl font-black tracking-tight">{q ? data.title : "Bạn muốn xem gì?"}</h1>
+    <p class="mt-1 text-sm text-zinc-400">Nhập tên phim, tên gốc hoặc từ khóa để tìm nhanh.</p>
   </section>
 
   {data.items.length > 0 ? (
@@ -30,6 +30,6 @@ const data = q ? await searchMovies(q, page, 30) : { title: "Tim kiem", items: [
       {data.items.map((movie) => <MovieCard movie={movie} compact />)}
     </section>
   ) : q ? (
-    <div class="mx-4 mt-8 rounded-3xl border border-dashed border-white/15 bg-white/5 p-8 text-center text-sm text-zinc-400">Khong tim thay ket qua phu hop.</div>
+    <div class="mx-4 mt-8 rounded-3xl border border-dashed border-white/15 bg-white/5 p-8 text-center text-sm text-zinc-400">Không tìm thấy kết quả phù hợp.</div>
   ) : null}
 </BaseLayout>

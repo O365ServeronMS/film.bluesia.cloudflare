@@ -12,7 +12,7 @@ const firstEp = movie.episodes[0]?.serverData[0];
 const heroImage = movie.thumb || movie.poster;
 const posterImage = movie.poster || movie.thumb;
 const title = `Bluesia Cinema - ${movie.originName || movie.name}`;
-const description = stripHtml(movie.content) || "Goc nho cua nguoi dam me phim";
+const description = stripHtml(movie.content) || "Góc nhỏ của người đam mê phim";
 const metaImage = movie.thumb || movie.poster || "/icon-512.png";
 ---
 
@@ -75,19 +75,19 @@ const metaImage = movie.thumb || movie.poster || "/icon-512.png";
         {movie.countryList?.map((item) => <span class="rounded-full bg-white/10 px-3 py-1.5 text-xs text-zinc-300">{item.name}</span>)}
       </div>
 
-      <h2 class="mt-8 text-xl font-black">Noi dung</h2>
-      <p class="mt-3 text-sm leading-7 text-zinc-300">{stripHtml(movie.content) || "Chua co mo ta."}</p>
+      <h2 class="mt-8 text-xl font-black">Nội dung</h2>
+      <p class="mt-3 text-sm leading-7 text-zinc-300">{stripHtml(movie.content) || "Chưa có mô tả."}</p>
 
       {movie.actor?.length ? (
         <div class="mt-6 rounded-3xl bg-white/5 p-4 ring-1 ring-white/10">
-          <h3 class="mb-3 inline-flex items-center gap-2 text-sm font-bold text-zinc-100"><Users className="h-4 w-4 text-gold" /> Dien vien</h3>
+          <h3 class="mb-3 inline-flex items-center gap-2 text-sm font-bold text-zinc-100"><Users className="h-4 w-4 text-gold" /> Diễn viên</h3>
           <p class="text-sm leading-7 text-zinc-300">{movie.actor.slice(0, 12).join(", ")}</p>
         </div>
       ) : null}
 
       {movie.episodes.length ? (
         <div class="mt-8">
-          <h2 class="text-xl font-black">Tap phim</h2>
+          <h2 class="text-xl font-black">Tập phim</h2>
           {movie.episodes.map((server, serverIndex) => (
             <div class="mt-4 rounded-3xl bg-white/5 p-4 ring-1 ring-white/10">
               <h3 class="mb-3 text-sm font-bold text-zinc-300">{displayEpisodeServerName(server.serverName)}</h3>

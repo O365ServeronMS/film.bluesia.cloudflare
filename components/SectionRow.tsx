@@ -9,7 +9,7 @@ export function SectionRow({ title, href, items }: { title: string; href: string
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-black tracking-tight">{title}</h2>
         <a href={href} className="inline-flex items-center gap-1 text-sm font-medium text-zinc-400 hover:text-gold">
-          Xem tat ca <ChevronRight className="h-4 w-4" />
+          Xem tất cả <ChevronRight className="h-4 w-4" />
         </a>
       </div>
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">

@@ -50,7 +50,7 @@ const useEmbedPlayer = Boolean(playerEmbed) && (forceEmbed || (mobileUA && !forc
 const title = `Watching - ${movie.originName || movie.name}`;
 ---
 
-<BaseLayout title={title} description={`Dang xem ${movie.originName || movie.name} tren Bluesia Cinema`} image={movie.thumb || movie.poster || "/icon-512.png"} type="video.movie">
+<BaseLayout title={title} description={`Đang xem ${movie.originName || movie.name} trên Bluesia Cinema`} image={movie.thumb || movie.poster || "/icon-512.png"} type="video.movie">
   <Fragment slot="head">
     <link rel="preconnect" href="https://vsembed.ru" />
     <link rel="preconnect" href="https://vsembed.su" />
@@ -62,31 +62,31 @@ const title = `Watching - ${movie.originName || movie.name}`;
   <article class="min-h-screen bg-black">
     <WatchRecorder client:load movie={movie} />
     <header class="watch-header sticky top-0 z-40 flex items-center gap-3 border-b border-white/10 bg-black/90 px-3 py-2 backdrop-blur-xl">
-      <a href={`/movie/${movie.slug}`} aria-label={`Quay lai ${movie.name}`} class="watch-header-action grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 text-white">
+      <a href={`/movie/${movie.slug}`} aria-label={`Quay lại ${movie.name}`} class="watch-header-action grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 text-white">
         <ArrowLeft className="h-5 w-5" />
       </a>
       <div class="watch-header-content min-w-0 flex-1">
-        <p class="watch-header-eyebrow text-[10px] font-bold uppercase tracking-[0.16em] text-gold">Dang xem</p>
+        <p class="watch-header-eyebrow text-[10px] font-bold uppercase tracking-[0.16em] text-gold">Đang xem</p>
         <div class="watch-header-copy min-w-0">
           <h1 class="watch-header-title truncate text-base font-black text-white">{movie.name}</h1>
-          <p class="watch-header-meta truncate text-xs text-zinc-400">{displayEpisodeServerName(server?.serverName)} - {episode?.name || "Tap phim"}</p>
+          <p class="watch-header-meta truncate text-xs text-zinc-400">{displayEpisodeServerName(server?.serverName)} - {episode?.name || "Tập phim"}</p>
         </div>
       </div>
-      {embed && <a href={embed} target="_blank" rel="noreferrer" aria-label="Mo trinh phat trong tab moi" class="watch-header-action grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 text-white"><ExternalLink className="h-5 w-5" /></a>}
+      {embed && <a href={embed} target="_blank" rel="noreferrer" aria-label="Mở trình phát trong tab mới" class="watch-header-action grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 text-white"><ExternalLink className="h-5 w-5" /></a>}
     </header>
 
     <section class="aspect-video w-full bg-black">
       {!useEmbedPlayer && m3u8 ? (
         <HlsVideo client:only="react" src={m3u8} poster={movie.thumb || movie.poster} />
       ) : playerEmbed ? (
-        <IframePlayerFacade client:load src={playerEmbed} poster={movie.thumb || movie.poster} title={`${movie.name} - ${episode?.name || "Tap phim"}`} />
+        <IframePlayerFacade client:load src={playerEmbed} poster={movie.thumb || movie.poster} title={`${movie.name} - ${episode?.name || "Tập phim"}`} />
       ) : (
-        <div class="grid h-full place-items-center p-6 text-center text-sm text-zinc-400">Khong co link xem cho tap nay.</div>
+        <div class="grid h-full place-items-center p-6 text-center text-sm text-zinc-400">Không có link xem cho tập này.</div>
       )}
     </section>
 
     <section class="bg-[#07090f] px-4 py-5">
-      <div class="mb-4 flex items-center gap-2 text-lg font-black"><ListVideo className="h-5 w-5 text-gold" /> Danh sach tap</div>
+      <div class="mb-4 flex items-center gap-2 text-lg font-black"><ListVideo className="h-5 w-5 text-gold" /> Danh sách tập</div>
       {movie.episodes.map((sv, svIndex) => (
         <div class="mb-5 rounded-3xl bg-white/5 p-4 ring-1 ring-white/10">
           <h2 class="mb-3 text-sm font-bold text-zinc-300">{displayEpisodeServerName(sv.serverName)}</h2>

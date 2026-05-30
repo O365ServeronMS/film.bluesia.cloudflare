@@ -6,8 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro build && wrangler dev dist/_worker.js/index.js --assets dist",
-    "deploy": "astro build && wrangler deploy dist/_worker.js/index.js --assets dist",
-    "lint": "eslint ."
+    "deploy": "astro build && wrangler deploy dist/_worker.js/index.js --assets dist"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.13",
@@ -20,7 +19,6 @@
     "astro": "^5.15.9",
     "autoprefixer": "^10.5.0",
     "clsx": "^2.1.1",
-    "critters": "^0.0.25",
     "hls.js": "^1.6.16",
     "lucide-react": "^1.16.0",
     "postcss": "^8.5.14",
@@ -31,7 +29,6 @@
     "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "eslint": "^9.39.1",
     "wrangler": "latest"
   },
   "browserslist": [

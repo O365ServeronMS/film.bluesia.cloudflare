@@ -33,7 +33,6 @@ type CloudflareRuntime = {
     BLUESIA_CACHE_MAX_BYTES?: string;
     BLUESIA_CACHE_METADATA_MAX_BYTES?: string;
     BLUESIA_CACHE_IMAGE_MAX_BYTES?: string;
-    BLUESIA_CACHE_WARMUP_TOKEN?: string;
     OPHIM_BASE_URL?: string;
     VSEMBED_EMBED_BASE_URL?: string;
     VSEMBED_MOBILE_EMBED_HOST?: string;

@@ -7,6 +7,9 @@ const DEFAULT_IMAGE_TTL_SECONDS = 60 * 60 * 24 * 15;
 const DEFAULT_DETAIL_TTL_SECONDS = 60 * 60 * 24 * 15;
 const DEFAULT_LIST_TTL_SECONDS = 60 * 5;
 const DEFAULT_SEARCH_TTL_SECONDS = 60 * 30;
+const CACHE_CLEANUP_START_RATIO = 0.9;
+const CACHE_CLEANUP_TARGET_RATIO = 0.8;
+const CACHE_DELETE_BATCH_SIZE = 50;
 
 type MinimalR2Object = {
   arrayBuffer(): Promise<ArrayBuffer>;
@@ -73,6 +76,7 @@ export type BinaryCacheHit = {
 };
 
 const memoryCache = new Map<string, { bytes: Uint8Array; meta: CacheMeta }>();
+let pruneInFlight: Promise<void> | undefined;
 
 function env() {
   return runtimeEnv<CacheEnv>() || {};
@@ -213,10 +217,158 @@ async function namespaceUsage(namespace: string) {
   return { totalBytes, entries };
 }
 
+const CACHE_NAMESPACES = ["images", "metadata-list", "metadata-search", "metadata-detail", "metadata-taxonomy", "metadata-json"];
+
+type CacheEntry = {
+  dataKey: string;
+  metaKey: string;
+  size: number;
+  cachedAt: string;
+};
+
+function cacheLog(message: string, details?: Record<string, unknown>) {
+  console.log(`[cache] ${message}`, details || {});
+}
+
+function cacheWarn(message: string, details?: Record<string, unknown>) {
+  console.warn(`[cache] ${message}`, details || {});
+}
+
+function parseCacheTime(value?: string | Date) {
+  const time = value instanceof Date ? value.getTime() : Date.parse(String(value || ""));
+  return Number.isFinite(time) ? time : 0;
+}
+
+function companionMetaKey(dataKey: string) {
+  return dataKey.replace(/\.(bin|json)$/i, ".meta");
+}
+
+async function totalCacheUsage() {
+  let totalBytes = 0;
+  let entries = 0;
+  for (const namespace of CACHE_NAMESPACES) {
+    const usage = await namespaceUsage(namespace);
+    totalBytes += usage.totalBytes;
+    entries += usage.entries;
+  }
+  return { totalBytes, entries };
+}
+
+async function listCacheEntries() {
+  const r2 = bucket();
+  const entries: CacheEntry[] = [];
+
+  if (!r2) {
+    for (const [dataKey, value] of memoryCache.entries()) {
+      if (dataKey.endsWith(".meta")) continue;
+      entries.push({
+        dataKey,
+        metaKey: companionMetaKey(dataKey),
+        size: value.meta.size,
+        cachedAt: value.meta.cachedAt
+      });
+    }
+    return entries;
+  }
+
+  for (const namespace of CACHE_NAMESPACES) {
+    const prefix = `${safeNamespace(namespace)}/`;
+    let cursor: string | undefined;
+    do {
+      const page = await r2.list({ prefix, limit: 1000, cursor });
+      for (const object of page.objects) {
+        if (object.key.endsWith(".meta")) continue;
+        entries.push({
+          dataKey: object.key,
+          metaKey: companionMetaKey(object.key),
+          size: Number(object.customMetadata?.size || object.size || 0),
+          cachedAt: object.customMetadata?.cachedAt || object.uploaded?.toISOString() || ""
+        });
+      }
+      cursor = page.truncated ? page.cursor : undefined;
+    } while (cursor);
+  }
+
+  return entries;
+}
+
+async function deleteCacheEntry(entry: CacheEntry) {
+  const r2 = bucket();
+  if (!r2) {
+    memoryCache.delete(entry.dataKey);
+    memoryCache.delete(entry.metaKey);
+    return;
+  }
+  await Promise.allSettled([r2.delete(entry.dataKey), r2.delete(entry.metaKey)]);
+}
+
+async function runPrune(reason: string, incomingBytes = 0) {
+  const maxBytes = cacheMaxBytes();
+  const startBytes = Math.floor(maxBytes * CACHE_CLEANUP_START_RATIO);
+  const targetBytes = Math.floor(maxBytes * CACHE_CLEANUP_TARGET_RATIO);
+  const usage = await totalCacheUsage();
+  const projectedBytes = usage.totalBytes + incomingBytes;
+
+  if (projectedBytes < startBytes) return;
+
+  const entries = (await listCacheEntries()).sort((a, b) => parseCacheTime(a.cachedAt) - parseCacheTime(b.cachedAt));
+  let projectedAfterDelete = usage.totalBytes;
+  let deletedEntries = 0;
+  let deletedBytes = 0;
+
+  for (const batchStart of Array.from({ length: Math.ceil(entries.length / CACHE_DELETE_BATCH_SIZE) }, (_, index) => index * CACHE_DELETE_BATCH_SIZE)) {
+    const batch = entries.slice(batchStart, batchStart + CACHE_DELETE_BATCH_SIZE);
+    if (!batch.length || projectedAfterDelete + incomingBytes <= targetBytes) break;
+
+    await Promise.all(batch.map(async (entry) => {
+      if (projectedAfterDelete + incomingBytes <= targetBytes) return;
+      await deleteCacheEntry(entry);
+      projectedAfterDelete -= entry.size;
+      deletedBytes += entry.size;
+      deletedEntries += 1;
+    }));
+  }
+
+  cacheLog("pruned cache", {
+    reason,
+    root: bucket() ? "r2:BLUESIA_CACHE_R2" : "memory",
+    maxBytes,
+    startBytes,
+    targetBytes,
+    beforeBytes: usage.totalBytes,
+    incomingBytes,
+    afterBytes: Math.max(0, projectedAfterDelete),
+    deletedBytes,
+    deletedEntries
+  });
+}
+
+async function ensureCacheCapacity(namespace: string, size: number) {
+  if (size > budgetForNamespace(namespace) || size > cacheMaxBytes()) return false;
+  let usage = await totalCacheUsage();
+  const maxBytes = cacheMaxBytes();
+  const startBytes = Math.floor(maxBytes * CACHE_CLEANUP_START_RATIO);
+  const projectedBytes = usage.totalBytes + size;
+
+  if (projectedBytes >= startBytes) {
+    const prunePromise = pruneInFlight ??= runPrune(`write:${namespace}`, size)
+      .catch((error) => cacheWarn("cache prune failed", { reason: `write:${namespace}`, error: error instanceof Error ? error.message : String(error) }))
+      .finally(() => {
+        pruneInFlight = undefined;
+      });
+
+    if (projectedBytes > maxBytes) {
+      await prunePromise;
+      usage = await totalCacheUsage();
+    }
+  }
+
+  const nextNamespaceBytes = (await namespaceUsage(namespace)).totalBytes;
+  return nextNamespaceBytes + size <= budgetForNamespace(namespace) && usage.totalBytes + size <= maxBytes;
+}
+
 async function canWrite(namespace: string, size: number) {
-  if (size > budgetForNamespace(namespace)) return false;
-  const usage = await namespaceUsage(namespace);
-  return usage.totalBytes + size <= budgetForNamespace(namespace) && usage.totalBytes + size <= cacheMaxBytes();
+  return ensureCacheCapacity(namespace, size);
 }
 
 export async function cacheStats() {
@@ -244,8 +396,14 @@ export async function cacheStats() {
   };
 }
 
-export async function pruneCache() {
-  return;
+export async function pruneCache(_force = true) {
+  if (pruneInFlight) return pruneInFlight;
+  pruneInFlight = runPrune("manual")
+    .catch((error) => cacheWarn("cache prune failed", { reason: "manual", error: error instanceof Error ? error.message : String(error) }))
+    .finally(() => {
+      pruneInFlight = undefined;
+    });
+  return pruneInFlight;
 }
 
 export async function readBinaryCache(namespace: string, key: string, ttlSeconds = ttlForNamespace(namespace)): Promise<BinaryCacheHit | null> {
@@ -298,6 +456,7 @@ export async function writeBinaryCache(namespace: string, key: string, body: Uin
   };
 
   if (!(await canWrite(namespace, body.byteLength))) {
+    cacheWarn("skipped binary cache write: capacity unavailable", { namespace, bytes: body.byteLength, maxBytes: cacheMaxBytes() });
     return { etag, skipped: true };
   }
 
@@ -343,7 +502,10 @@ export async function readJsonCache<T>(namespace: string, key: string, ttlSecond
 export async function writeJsonCache(namespace: string, key: string, value: unknown, sourceUrl?: string) {
   const body = JSON.stringify(value);
   const bytes = new TextEncoder().encode(body);
-  if (!(await canWrite(namespace, bytes.byteLength))) return { skipped: true };
+  if (!(await canWrite(namespace, bytes.byteLength))) {
+    cacheWarn("skipped json cache write: capacity unavailable", { namespace, bytes: bytes.byteLength, maxBytes: cacheMaxBytes() });
+    return { skipped: true };
+  }
 
   const meta: CacheMeta = {
     namespace: safeNamespace(namespace),

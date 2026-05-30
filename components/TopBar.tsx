@@ -8,13 +8,13 @@ export function TopBar() {
     <header className="sticky top-0 z-40 border-b border-white/5 bg-[#07090f]/90 px-4 py-4 backdrop-blur-xl">
       <div className="flex items-center gap-3">
         <SearchSuggest />
-        <a href="/favorites" aria-label="Phim yeu thich" className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-zinc-300">
+        <a href="/favorites" aria-label="Phim yêu thích" className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-zinc-300">
           <Heart className="h-5 w-5" />
         </a>
-        <a href="/history" aria-label="Lich su xem" className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-zinc-300">
+        <a href="/history" aria-label="Lịch sử xem" className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-zinc-300">
           <Clock3 className="h-5 w-5" />
         </a>
-        <a href="/settings" aria-label="Cai dat" className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-zinc-300">
+        <a href="/settings" aria-label="Cài đặt" className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-white/10 bg-white/10 text-zinc-300">
           <UserRound className="h-5 w-5" />
         </a>
       </div>

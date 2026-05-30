@@ -5,12 +5,12 @@ import { Clapperboard, Film, Home, MonitorPlay, Settings, Sparkles } from "lucid
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/", label: "Trang chu", icon: Home },
-  { href: "/list/phim-le", label: "Phim le", icon: Film },
-  { href: "/list/phim-bo", label: "Phim bo", icon: MonitorPlay },
+  { href: "/", label: "Trang chủ", icon: Home },
+  { href: "/list/phim-le", label: "Phim lẻ", icon: Film },
+  { href: "/list/phim-bo", label: "Phim bộ", icon: MonitorPlay },
   { href: "/list/tv-shows", label: "TV Show", icon: Clapperboard },
-  { href: "/list/hoat-hinh", label: "Hoat hinh", icon: Sparkles },
-  { href: "/settings", label: "Cai dat", icon: Settings }
+  { href: "/list/hoat-hinh", label: "Hoạt hình", icon: Sparkles },
+  { href: "/settings", label: "Cài đặt", icon: Settings }
 ];
 
 export function BottomNav() {

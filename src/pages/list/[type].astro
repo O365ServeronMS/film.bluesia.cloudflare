@@ -8,10 +8,10 @@ import { getList } from "@/lib/ophim";
 const type = Astro.params.type || "phim-le";
 const page = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
 const quickCountries = [
-  { label: "Au My", slug: "au-my" },
-  { label: "Han Quoc", slug: "han-quoc" }
+  { label: "Âu Mỹ", slug: "au-my" },
+  { label: "Hàn Quốc", slug: "han-quoc" }
 ] as const;
-const quickCategories = [{ label: "Phim chieu rap", slug: "phim-chieu-rap" }] as const;
+const quickCategories = [{ label: "Phim chiếu rạp", slug: "phim-chieu-rap" }] as const;
 const countryFilterableTypes = new Set(["phim-le", "phim-bo", "tv-shows"]);
 const categoryFilterableTypes = new Set(["phim-le"]);
 const supportsCountryFilter = countryFilterableTypes.has(type);
@@ -46,10 +46,10 @@ function listHref(nextPage: number, filters = activeFilters) {
   {(supportsCountryFilter || supportsCategoryFilter) && (
     <section class="space-y-3 px-4 pt-4">
       {supportsCountryFilter && (
-        <div aria-label="Loc nhanh theo quoc gia">
-          <p class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">Quoc gia</p>
+        <div aria-label="Lọc nhanh theo quốc gia">
+          <p class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">Quốc gia</p>
           <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-            <a href={listHref(1, { ...activeFilters, country: "" })} class={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-extrabold ring-1 transition ${!country ? "bg-gold text-black ring-gold" : "bg-white/10 text-zinc-200 ring-white/10"}`}>Tat ca</a>
+            <a href={listHref(1, { ...activeFilters, country: "" })} class={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-extrabold ring-1 transition ${!country ? "bg-gold text-black ring-gold" : "bg-white/10 text-zinc-200 ring-white/10"}`}>Tất cả</a>
             {quickCountries.map((item) => (
               <a href={listHref(1, { ...activeFilters, country: item.slug })} class={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-extrabold ring-1 transition ${country === item.slug ? "bg-gold text-black ring-gold" : "bg-white/10 text-zinc-200 ring-white/10"}`}>{item.label}</a>
             ))}
@@ -57,10 +57,10 @@ function listHref(nextPage: number, filters = activeFilters) {
         </div>
       )}
       {supportsCategoryFilter && (
-        <div aria-label="Loc nhanh theo nhom phim">
-          <p class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">Nhom phim</p>
+        <div aria-label="Lọc nhanh theo nhóm phim">
+          <p class="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-400">Nhóm phim</p>
           <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-            <a href={listHref(1, { ...activeFilters, category: "" })} class={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-extrabold ring-1 transition ${!category ? "bg-gold text-black ring-gold" : "bg-white/10 text-zinc-200 ring-white/10"}`}>Tat ca</a>
+            <a href={listHref(1, { ...activeFilters, category: "" })} class={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-extrabold ring-1 transition ${!category ? "bg-gold text-black ring-gold" : "bg-white/10 text-zinc-200 ring-white/10"}`}>Tất cả</a>
             {quickCategories.map((item) => (
               <a href={listHref(1, { ...activeFilters, category: item.slug })} class={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-extrabold ring-1 transition ${category === item.slug ? "bg-gold text-black ring-gold" : "bg-white/10 text-zinc-200 ring-white/10"}`}>{item.label}</a>
             ))}
@@ -76,10 +76,10 @@ function listHref(nextPage: number, filters = activeFilters) {
     ))}
   </section>
 
-  <nav class="px-4 pt-8" aria-label="Phan trang">
+  <nav class="px-4 pt-8" aria-label="Phân trang">
     <div class="flex items-center justify-between gap-3">
       <a href={listHref(Math.max(1, currentPage - 1))} aria-disabled={currentPage <= 1} class="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-bold text-white ring-1 ring-white/10 aria-disabled:pointer-events-none aria-disabled:opacity-40">
-        <ChevronLeft className="h-4 w-4" /> Trang truoc
+        <ChevronLeft className="h-4 w-4" /> Trang trước
       </a>
       <a href={listHref(currentPage + 1)} aria-disabled={totalPages ? currentPage >= totalPages : false} class="inline-flex items-center gap-2 rounded-2xl bg-gold px-4 py-3 text-sm font-black text-black aria-disabled:pointer-events-none aria-disabled:opacity-40">
         Trang sau <ChevronRight className="h-4 w-4" />
