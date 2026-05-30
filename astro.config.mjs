@@ -5,6 +5,9 @@ import react from "@astrojs/react";
 export default defineConfig({
   output: "server",
   site: "https://film.bluesia.net",
+  session: {
+    driver: "memory"
+  },
   integrations: [react()],
   adapter: cloudflare({
     imageService: "passthrough",
