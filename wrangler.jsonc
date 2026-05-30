@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "film-bluesia-net",
+  "name": "film-bluesia-cloudflare",
   "main": "dist/_worker.js/index.js",
   "assets": {
     "directory": "./dist"
@@ -11,12 +11,6 @@
     {
       "pattern": "film.bluesia.net",
       "custom_domain": true
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "BLUESIA_CACHE_R2",
-      "bucket_name": "film-bluesia-cache"
     }
   ],
   "vars": {
