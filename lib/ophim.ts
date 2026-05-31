@@ -17,10 +17,12 @@ import { buildVsembedServer } from "@/lib/vsembed";
 import { normalizedEpisodeName, normalizedEpisodeSlug } from "@/lib/episodes";
 
 export const IMAGE_CACHE_TTL_SECONDS = 1296000;
-export const LIST_CACHE_TTL_SECONDS = 3600;
+export const LIST_CACHE_TTL_SECONDS = 1800;
 export const MOVIE_LONG_CACHE_TTL_SECONDS = 1296000;
 export const MOVIE_SHORT_CACHE_TTL_SECONDS = 3600;
 export const SEARCH_CACHE_TTL_SECONDS = 0;
+export const OPHIM_REFRESH_MAX_MOVIES = 12;
+export const OPHIM_REFRESH_DELAY_MS = 1250;
 
 const BASE_URL = (process.env.OPHIM_BASE_URL || "https://ophim1.com").replace(/\/$/, "");
 const CDN_FALLBACKS = [
@@ -451,4 +453,52 @@ export async function getCategories() {
 export async function getCountries() {
   const payload = await fetchJson<SourceTaxonomyPayload>(`/quoc-gia`, 3600);
   return Array.isArray(payload) ? payload : payload?.data || [];
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function refreshLatestOphimMovies(options: { maxMovies?: number; delayMs?: number } = {}) {
+  const maxMovies = Math.min(24, Math.max(1, Math.floor(options.maxMovies || OPHIM_REFRESH_MAX_MOVIES)));
+  const delayMs = Math.min(5000, Math.max(250, Math.floor(options.delayMs || OPHIM_REFRESH_DELAY_MS)));
+  const startedAt = Date.now();
+  const result = {
+    listItems: 0,
+    detailAttempts: 0,
+    detailOk: 0,
+    detailFailed: 0,
+    slugs: [] as string[],
+    errors: [] as Array<{ slug: string; message: string }>
+  };
+
+  const latest = await getList("phim-moi-cap-nhat", 1, Math.max(18, maxMovies));
+  const slugs = latest.items.map((movie) => movie.slug).filter(Boolean).slice(0, maxMovies);
+  result.listItems = latest.items.length;
+  result.slugs = slugs;
+
+  for (const [index, slug] of slugs.entries()) {
+    if (index > 0) await sleep(delayMs);
+    result.detailAttempts += 1;
+    try {
+      await getMovie(slug);
+      result.detailOk += 1;
+    } catch (error) {
+      result.detailFailed += 1;
+      result.errors.push({
+        slug,
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+
+  logCacheEvent("OPHIM_REFRESH_DONE", {
+    listItems: result.listItems,
+    detailAttempts: result.detailAttempts,
+    detailOk: result.detailOk,
+    detailFailed: result.detailFailed,
+    durationMs: Date.now() - startedAt
+  });
+
+  return result;
 }

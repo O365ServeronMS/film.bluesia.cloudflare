@@ -45,6 +45,8 @@ type CloudflareRuntime = {
     MOVIE_METADATA?: KVNamespace;
     CACHE_REFRESH_TOKEN?: string;
     OPHIM_BASE_URL?: string;
+    OPHIM_REFRESH_MAX_MOVIES?: string;
+    OPHIM_REFRESH_DELAY_MS?: string;
     VSEMBED_EMBED_BASE_URL?: string;
     VSEMBED_MOBILE_EMBED_HOST?: string;
   };

@@ -12,6 +12,9 @@ export default defineConfig({
   adapter: cloudflare({
     imageService: "passthrough",
     cloudflareModules: false,
+    workerEntryPoint: {
+      path: "src/worker.ts"
+    },
     platformProxy: {
       enabled: false,
       persist: false

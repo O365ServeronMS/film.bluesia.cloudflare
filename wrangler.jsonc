@@ -13,6 +13,9 @@
       "custom_domain": true
     }
   ],
+  "triggers": {
+    "crons": ["*/30 * * * *"]
+  },
   "r2_buckets": [
     {
       "binding": "IMAGE_CACHE",
@@ -28,6 +31,8 @@
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://film.bluesia.net",
     "HTML_CACHE_VERSION": "2026-05-31-assets-v2",
-    "BLUESIA_IMAGE_TRANSFORM_MODE": "cloudflare-free"
+    "BLUESIA_IMAGE_TRANSFORM_MODE": "cloudflare-free",
+    "OPHIM_REFRESH_MAX_MOVIES": "12",
+    "OPHIM_REFRESH_DELAY_MS": "1250"
   }
 }
