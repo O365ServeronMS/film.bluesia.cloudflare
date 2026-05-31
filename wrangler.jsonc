@@ -27,6 +27,7 @@
   ],
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://film.bluesia.net",
+    "HTML_CACHE_VERSION": "2026-05-31-assets-v2",
     "BLUESIA_IMAGE_TRANSFORM_MODE": "cloudflare-free"
   }
 }

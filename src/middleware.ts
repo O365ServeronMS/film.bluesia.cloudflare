@@ -7,6 +7,7 @@ const LIST_HTML_TTL_SECONDS = 3600;
 const MOVIE_LONG_HTML_TTL_SECONDS = 1296000;
 const MOVIE_SHORT_HTML_TTL_SECONDS = 3600;
 const STALE_WHILE_REVALIDATE_SECONDS = 3600;
+const DEFAULT_HTML_CACHE_VERSION = "2026-05-31-assets-v2";
 
 type HtmlCachePolicy = {
   browserMaxAge: number;
@@ -62,11 +63,16 @@ function publicHtmlPolicy(pathname: string): HtmlCachePolicy | null {
   return null;
 }
 
-function canonicalCacheRequest(url: URL) {
+function htmlCacheVersion(env: Record<string, unknown> | undefined) {
+  return String(env?.HTML_CACHE_VERSION || process.env.HTML_CACHE_VERSION || DEFAULT_HTML_CACHE_VERSION);
+}
+
+function canonicalCacheRequest(url: URL, version: string) {
   const cacheUrl = new URL(url.toString());
   cacheUrl.searchParams.delete("refresh");
   cacheUrl.searchParams.delete("token");
   cacheUrl.searchParams.sort();
+  cacheUrl.searchParams.set("__html_cache_version", version);
   return new Request(cacheUrl.toString(), { method: "GET" });
 }
 
@@ -104,7 +110,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   setRuntimeEnv(env);
   const bypassRefresh = validRefreshBypass(context.url, env);
   setCacheBypassRefresh(bypassRefresh);
-  const cacheRequest = canonicalCacheRequest(context.url);
+  const cacheVersion = htmlCacheVersion(env);
+  const cacheRequest = canonicalCacheRequest(context.url, cacheVersion);
   const initialPolicy = publicHtmlPolicy(context.url.pathname);
   const canUseHtmlCache = ["GET", "HEAD"].includes(context.request.method) &&
     isHtmlRequest(context.request) &&
@@ -116,6 +123,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (cached) {
       const hit = new Response(cached.body, cached);
       hit.headers.set("X-Film-Bluesia-Cache", "HTML_CACHE_HIT");
+      hit.headers.set("X-Film-Bluesia-HTML-Cache-Version", cacheVersion);
       cacheEvent("HTML_CACHE_HIT", { type: "html", url: cacheRequest.url });
       setCacheBypassRefresh(false);
       return hit;
@@ -157,6 +165,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     response.headers.delete("X-Film-Bluesia-Movie-Cache-Class");
     applyHtmlCacheHeaders(response, finalPolicy);
     response.headers.set("X-Film-Bluesia-Cache", bypassRefresh ? "HTML_CACHE_BYPASS_REFRESH" : "HTML_CACHE_MISS");
+    response.headers.set("X-Film-Bluesia-HTML-Cache-Version", cacheVersion);
 
     if (context.request.method === "GET") {
       await caches.default.put(cacheRequest, response.clone());

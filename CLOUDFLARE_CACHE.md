@@ -7,6 +7,7 @@ This deployment uses Cloudflare-native cache storage only.
 - `IMAGE_CACHE`: R2 bucket for poster, backdrop, and thumbnail binaries.
 - `KV`: KV namespace for OPhim JSON metadata. `MOVIE_METADATA` is also supported as a backward-compatible binding name.
 - `CACHE_REFRESH_TOKEN`: secret used by `?refresh=1&token=...` to bypass HTML and metadata cache.
+- `HTML_CACHE_VERSION`: version segment added to internal HTML cache keys. Bump this when a deployment should ignore previously cached HTML that may reference old hashed Astro assets.
 
 The production KV namespace is configured in `wrangler.jsonc`:
 
@@ -24,6 +25,8 @@ wrangler secret put CACHE_REFRESH_TOKEN
 - Search: no-store.
 
 Favorites, watch history, and settings remain client-side localStorage state and are not included in cached HTML.
+
+HTML cache keys include `HTML_CACHE_VERSION` internally. This prevents a cached page from an older deployment from loading after its hashed `/_astro/*` CSS or JS files have been replaced.
 
 ## Image cache profiles
 
