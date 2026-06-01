@@ -36,6 +36,13 @@
       "id": "e16247af8b894bdaa78723303149b900"
     }
   ],
+  "d1_databases": [
+    {
+      "binding": "IMDB_DB",
+      "database_name": "film-bluesia-imdb",
+      "database_id": "4ba5c615-822a-4bca-8856-9d86da9d74ff"
+    }
+  ],
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://film.bluesia.net",
     "HTML_CACHE_VERSION": "2026-06-01-imdb-only-v4",

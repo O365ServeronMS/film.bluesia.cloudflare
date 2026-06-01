@@ -38,12 +38,24 @@ type KVNamespace = {
   }>;
 };
 
+type D1PreparedStatement = {
+  bind(...values: unknown[]): D1PreparedStatement;
+  first<T = unknown>(): Promise<T | null>;
+};
+
+type D1Database = {
+  prepare(query: string): D1PreparedStatement;
+};
+
 type CloudflareRuntime = {
   env: {
     KV?: KVNamespace;
     IMAGE_CACHE?: R2Bucket;
+    IMDB_DB?: D1Database;
     MOVIE_METADATA?: KVNamespace;
     CACHE_REFRESH_TOKEN?: string;
+    IMDB_RATING_PROVIDER?: string;
+    IMDB_RATING_SYNC_ENABLED?: string;
     OPHIM_BASE_URL?: string;
     OPHIM_REFRESH_MAX_MOVIES?: string;
     OPHIM_REFRESH_DELAY_MS?: string;

@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, Clock, Play, Star, Users } from "lucide-react";
 import BaseLayout from "@/src/layouts/BaseLayout.astro";
 import { MovieActions } from "@/components/LocalMovieActions";
 import { episodeWatchKey } from "@/lib/episodes";
+import { extractImdbId, getImdbRating } from "@/lib/imdb-rating";
 import { displayEpisodeServerName, getMovie, movieDetailCachePolicy } from "@/lib/ophim";
 import { getDisplayRating, proxiedImage, stripHtml } from "@/lib/utils";
 
@@ -16,7 +17,10 @@ const posterImage = movie.poster || movie.thumb;
 const title = `Bluesia Cinema - ${movie.originName || movie.name}`;
 const description = stripHtml(movie.content) || "Góc nhỏ của người đam mê phim";
 const metaImage = movie.thumb || movie.poster || "/icon-512.png";
-const displayRating = getDisplayRating(movie);
+const imdbLookup = await getImdbRating(Astro.locals.runtime?.env, extractImdbId(movie));
+const displayRating = imdbLookup.rating
+  ? { label: "IMDb", score: imdbLookup.rating, text: `IMDb ${imdbLookup.rating.toFixed(1).replace(".0", "")}` }
+  : getDisplayRating(movie);
 ---
 
 <BaseLayout title={title} description={description} image={metaImage} type="video.movie">
