@@ -5,7 +5,7 @@ import { KeyboardEvent, TouchEvent, useEffect, useMemo, useRef, useState } from 
 import { ChevronLeft, ChevronRight, Info, Play, Sparkles, Star } from "lucide-react";
 import type { MovieCard } from "@/lib/types";
 import { baseSpotlightScore, normalizedLabelSet } from "@/lib/spotlight";
-import { proxiedImage, proxiedImageCandidateSrcSet, ratingLabel } from "@/lib/utils";
+import { getDisplayRating, proxiedImage, proxiedImageCandidateSrcSet } from "@/lib/utils";
 
 const SLIDE_INTERVAL_MS = 5000;
 const FAV_KEY = "film.bluesia.net:favorites";
@@ -151,6 +151,7 @@ export function HeroSlider({ items }: { items: MovieCard[] }) {
   const visibleIndex = activeIndex < slides.length ? activeIndex : 0;
   const active = slides[visibleIndex];
   const activeImage = active.thumb || active.poster;
+  const displayRating = getDisplayRating(active);
   const isPersonalized = Boolean(personalData && (personalData.favorites.length || personalData.history.length));
   const canNavigate = slides.length > 1;
 
@@ -250,9 +251,11 @@ export function HeroSlider({ items }: { items: MovieCard[] }) {
             </span>
             <span className="rounded-md bg-gold px-2.5 py-1 text-xs font-black text-black">{active.episodeCurrent || "FULL"}</span>
             {active.quality && <span className="rounded-md bg-white/20 px-2.5 py-1 text-xs font-bold text-white backdrop-blur">{active.quality}</span>}
-            <span className="inline-flex items-center gap-1 rounded-md bg-black/60 px-2.5 py-1 text-xs font-bold text-gold backdrop-blur">
-              <Star className="h-3.5 w-3.5 fill-gold" /> {ratingLabel(active)}
-            </span>
+            {displayRating && (
+              <span className="inline-flex items-center gap-1 rounded-md bg-black/60 px-2.5 py-1 text-xs font-bold text-gold backdrop-blur">
+                <Star className="h-3.5 w-3.5 fill-gold" /> {displayRating.text}
+              </span>
+            )}
           </div>
           <h1 className="line-clamp-2 min-h-[4.5rem] max-w-[82%] text-3xl font-black leading-tight tracking-tight text-white drop-shadow-lg sm:max-w-[74%]">{active.name}</h1>
           <p className="mt-1 line-clamp-1 min-h-5 max-w-[86%] text-sm italic text-zinc-200 sm:max-w-[78%]">{active.originName || active.name} · {active.year || "N/A"}{active.country ? ` · ${active.country}` : ""}</p>

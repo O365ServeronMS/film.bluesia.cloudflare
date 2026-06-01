@@ -11,6 +11,8 @@ export type MovieCard = {
   status?: string;
   episodeCurrent?: string;
   time?: string;
+  imdbRating?: number;
+  tmdbRating?: number;
   tmdb?: { id?: number | string; vote_average?: number; vote_count?: number };
   imdb?: { id?: string; rating?: number };
   country?: string;
@@ -99,6 +101,7 @@ export type SourceMovie = {
   rating?: SourceRating | number | string;
   tmdb_id?: number | string;
   imdb?: SourceRating;
+  imdb_rating?: SourceRating | number | string;
   category?: SourceLabel[] | string;
   country?: SourceLabel[] | string;
   content?: string;

@@ -4,7 +4,7 @@ import BaseLayout from "@/src/layouts/BaseLayout.astro";
 import { MovieActions } from "@/components/LocalMovieActions";
 import { episodeWatchKey } from "@/lib/episodes";
 import { displayEpisodeServerName, getMovie, movieDetailCachePolicy } from "@/lib/ophim";
-import { proxiedImage, ratingLabel, stripHtml } from "@/lib/utils";
+import { getDisplayRating, proxiedImage, stripHtml } from "@/lib/utils";
 
 const slug = Astro.params.slug || "";
 const movie = await getMovie(slug);
@@ -16,6 +16,7 @@ const posterImage = movie.poster || movie.thumb;
 const title = `Bluesia Cinema - ${movie.originName || movie.name}`;
 const description = stripHtml(movie.content) || "Góc nhỏ của người đam mê phim";
 const metaImage = movie.thumb || movie.poster || "/icon-512.png";
+const displayRating = getDisplayRating(movie);
 ---
 
 <BaseLayout title={title} description={description} image={metaImage} type="video.movie">
@@ -49,9 +50,11 @@ const metaImage = movie.thumb || movie.poster || "/icon-512.png";
             )}
           </div>
           <div class="min-w-0 flex-1 pt-4">
-            <div class="mb-3 inline-flex items-center gap-1 rounded-lg bg-black/50 px-2.5 py-1 text-xs font-bold text-gold backdrop-blur">
-              <Star className="h-3.5 w-3.5 fill-gold" /> {ratingLabel(movie)}
-            </div>
+            {displayRating && (
+              <div class="mb-3 inline-flex items-center gap-1 rounded-lg bg-black/50 px-2.5 py-1 text-xs font-bold text-gold backdrop-blur">
+                <Star className="h-3.5 w-3.5 fill-gold" /> {displayRating.text}
+              </div>
+            )}
             <h1 class="text-3xl font-black leading-tight tracking-tight">{movie.name}</h1>
             <p class="mt-2 line-clamp-2 text-sm italic text-zinc-300">{movie.originName}</p>
             <div class="mt-4 flex flex-wrap gap-2 text-xs text-zinc-300">

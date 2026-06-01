@@ -156,6 +156,8 @@ function mergeMovie(a: MovieCard, b: MovieCard): MovieCard {
     time: primary.time || fallback.time,
     country: mergeText(primary.country, fallback.country),
     category: mergeText(primary.category, fallback.category),
+    imdbRating: primary.imdbRating || primary.imdb?.rating || fallback.imdbRating || fallback.imdb?.rating,
+    tmdbRating: primary.tmdbRating || primary.tmdb?.vote_average || fallback.tmdbRating || fallback.tmdb?.vote_average,
     tmdb: primary.tmdb?.vote_average || primary.tmdb?.vote_count ? primary.tmdb : fallback.tmdb,
     imdb: primary.imdb?.rating ? primary.imdb : fallback.imdb
   };

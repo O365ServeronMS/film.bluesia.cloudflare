@@ -10,12 +10,33 @@ export function stripHtml(value?: string) {
   return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export function ratingLabel(movie: { tmdb?: { vote_average?: number }; imdb?: { rating?: number } }) {
-  const imdb = Number(movie.imdb?.rating || 0);
-  const tmdb = Number(movie.tmdb?.vote_average || 0);
-  if (imdb > 0) return `IMDB ${imdb.toFixed(1).replace(".0", "")}`;
-  if (tmdb > 0) return `TMDB ${tmdb.toFixed(1).replace(".0", "")}`;
-  return "TMDB";
+type RatingSource = {
+  imdbRating?: number;
+  tmdbRating?: number;
+  tmdb?: { vote_average?: number };
+  imdb?: { rating?: number };
+};
+
+function normalizedRating(value?: number) {
+  const rating = Number(value || 0);
+  return Number.isFinite(rating) && rating > 0 ? rating : undefined;
+}
+
+function formatRating(value: number) {
+  return value.toFixed(1).replace(".0", "");
+}
+
+export function getDisplayRating(movie: RatingSource) {
+  const imdb = normalizedRating(movie.imdbRating) || normalizedRating(movie.imdb?.rating);
+  const tmdb = normalizedRating(movie.tmdbRating) || normalizedRating(movie.tmdb?.vote_average);
+
+  if (imdb) return { label: "IMDb", score: imdb, text: `IMDb ${formatRating(imdb)}` };
+  if (tmdb) return { label: "TMDB", score: tmdb, text: `TMDB ${formatRating(tmdb)}` };
+  return null;
+}
+
+export function ratingLabel(movie: RatingSource) {
+  return getDisplayRating(movie)?.text || "";
 }
 
 export function normalizeEpisodeName(value?: string, index = 0) {

@@ -247,7 +247,9 @@ function pickName(raw: SourceMovie) {
 }
 
 function sourceRating(value?: SourceRating | number | string) {
-  return typeof value === "object" && value !== null ? value : {};
+  if (typeof value === "object" && value !== null) return value;
+  if (typeof value === "number" || typeof value === "string") return { rating: value };
+  return {};
 }
 
 function labelText(value?: SourceLabel[] | string) {
@@ -267,7 +269,9 @@ function visibleListCards(items: MovieCard[]) {
 
 export function normalizeCard(raw: SourceMovie, cdn?: string): MovieCard {
   const tmdb = sourceRating(raw?.tmdb || raw?.tmdb_rating || raw?.rating);
-  const imdb = sourceRating(raw?.imdb);
+  const imdb = sourceRating(raw?.imdb || raw?.imdb_rating);
+  const tmdbRating = Number(tmdb?.vote_average || tmdb?.rating || 0) || undefined;
+  const imdbRating = Number(imdb?.rating || 0) || undefined;
   const categoryName = labelText(raw?.category);
   const countryName = labelText(raw?.country);
 
@@ -284,14 +288,16 @@ export function normalizeCard(raw: SourceMovie, cdn?: string): MovieCard {
     status: raw?.status || undefined,
     episodeCurrent: raw?.episode_current || raw?.episodeCurrent || undefined,
     time: raw?.time || raw?.duration || undefined,
+    imdbRating,
+    tmdbRating,
     tmdb: {
       id: tmdb?.id || tmdb?.tmdb_id || raw?.tmdb_id || undefined,
-      vote_average: Number(tmdb?.vote_average || tmdb?.rating || 0) || undefined,
+      vote_average: tmdbRating,
       vote_count: Number(tmdb?.vote_count || 0) || undefined
     },
     imdb: {
       id: imdb?.id == null ? undefined : String(imdb.id),
-      rating: Number(imdb?.rating || 0) || undefined
+      rating: imdbRating
     },
     country: countryName,
     category: categoryName
