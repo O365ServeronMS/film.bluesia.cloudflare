@@ -8,6 +8,7 @@
 - `tsconfig.json`: strict TypeScript, JSX, path alias, generated-folder excludes.
 - `postcss.config.mjs`: Tailwind/PostCSS setup.
 - `CLOUDFLARE_CACHE.md`: operational cache documentation and binding expectations.
+- `docs/video-buffering-policy.md`: HLS playback buffering policy; documents client-side buffer/retry optimization and the rule against Worker-side video proxying or chunking.
 
 ## Routes
 
@@ -92,6 +93,7 @@
 - Episode selection history: `rg -n "data-watch-episode-link|location.replace|episodeWatchKey|findEpisodeByWatchKey|serverIndex|epKey" src/pages/watch src lib`.
 - Source tab propagation: `rg -n "from|validNavSource|currentNavSource|sourceFromHash|data-watch-episode-link|activeKeyFromPath|contextKeyForPath" src/layouts components src/pages`.
 - Video player / HLS: `rg -n "HlsVideo|hls.js|m3u8|IframePlayerFacade|vsembed|Vidsrc" components src lib`.
+- Video buffering policy: `docs/video-buffering-policy.md` and the Player section in `docs/DECISIONS.md`.
 - Cloudflare Worker/Pages logic: `rg -n "worker|scheduled|createExports|cloudflare|wrangler|adapter|caches.default" src lib astro.config.mjs wrangler.jsonc`.
 - KV/R2/D1/cache logic: `rg -n "KV|MOVIE_METADATA|IMAGE_CACHE|R2|D1|cache|TTL|HTML_CACHE_VERSION|writeBudget" src lib CLOUDFLARE_CACHE.md wrangler.jsonc`.
 - SEO / robots / sitemap: `rg -n "canonical|og:|twitter|robots|sitemap|manifest|_headers" src public`.

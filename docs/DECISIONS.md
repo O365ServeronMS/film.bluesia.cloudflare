@@ -71,6 +71,9 @@
 ## Player
 
 - Direct OPhim HLS playback uses `HlsVideo.tsx` with native HTML5 video and dynamic hls.js fallback.
+- M3U8/HLS chunking is delegated to upstream playlist segments; do not proxy, re-chunk, download, transcode, or store third-party video segments through the Cloudflare Worker.
+- HLS performance tuning belongs in the client player: conservative default buffer, good-network aggressive buffer cap, retry settings, lazy loading, native HLS fallback, and fatal error recovery.
+- Default HLS buffer target should remain 60 seconds. Aggressive mode may target 180 seconds with a 300-second max cap only on good connections; 5-minute buffering is not a universal default.
 - Embed playback uses `IframePlayerFacade.tsx`; watch-page selection logic is in `src/pages/watch/[slug].astro`.
 - Preserve mobile/embed fallback behavior unless the task targets player selection.
 
