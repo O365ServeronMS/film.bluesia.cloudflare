@@ -29,6 +29,7 @@
 - Preserve mobile-first layout and the `max-w-[720px]` app shell unless the task explicitly changes it.
 - Do not change unrelated cache keys, cache TTLs, binding names, or cache version strings unless explicitly requested.
 - Do not commit secrets, account IDs, tokens, or private deployment details.
+- Navigation policy: category context for `/movie` and `/watch` pages must be passed with query param `?from=<category>`, not hash fragments. Hash fragments are unavailable during Astro/server/static render. Bottom nav active state should use pathname plus `from` query param and optional movie category fallback. Do not change Cloudflare/cache/video logic for nav active-state fixes.
 
 ## Verification Rules
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Clapperboard, Film, Home, MonitorPlay, Settings, Sparkles } from "lucide-react";
+import { getActiveNavKey, navSourceFromHash, navSourceFromSearchParams, normalizeNavPath } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -14,53 +15,23 @@ const items = [
 ];
 
 const CONTEXT_KEY = "film.bluesia.net:last-nav-section";
-const SOURCE_KEYS = new Set(["home", "phim-le", "phim-bo", "tv-shows", "hoat-hinh"]);
-
-function normalizePath(pathname: string) {
-  if (pathname.length > 1 && pathname.endsWith("/")) return pathname.slice(0, -1);
-  return pathname || "/";
-}
-
-function validSourceKey(value?: string | null) {
-  const key = String(value || "").trim();
-  return SOURCE_KEYS.has(key) ? key : "";
-}
-
-function activeKeyFromPath(pathname: string, contextKey = "") {
-  const path = normalizePath(pathname);
-  if (path === "/") return "home";
-  if (path.startsWith("/list/phim-le")) return "phim-le";
-  if (path.startsWith("/list/phim-bo")) return "phim-bo";
-  if (path.startsWith("/list/tv-shows")) return "tv-shows";
-  if (path.startsWith("/list/hoat-hinh")) return "hoat-hinh";
-  if (path.startsWith("/search")) return "search";
-  if (path.startsWith("/settings")) return "settings";
-  if (path.startsWith("/movie/") || path.startsWith("/watch/")) return contextKey;
-  return "";
-}
 
 function contextFromPath(pathname: string) {
-  const key = activeKeyFromPath(pathname);
+  const key = getActiveNavKey(pathname);
   return key && !["search", "settings"].includes(key) ? key : "";
-}
-
-function sourceFromHash(hash?: string) {
-  const clean = String(hash || "").replace(/^#/, "");
-  if (!clean) return "";
-  return validSourceKey(new URLSearchParams(clean).get("from"));
 }
 
 function readContext() {
   if (typeof window === "undefined") return "";
   try {
-    return validSourceKey(sessionStorage.getItem(CONTEXT_KEY));
+    return navSourceFromSearchParams(new URLSearchParams({ from: sessionStorage.getItem(CONTEXT_KEY) || "" }));
   } catch {
     return "";
   }
 }
 
-function writeContext(pathname: string) {
-  const key = contextFromPath(pathname);
+function writeContext(pathname: string, search = "") {
+  const key = navSourceFromSearchParams(search) || contextFromPath(pathname);
   if (!key || typeof window === "undefined") return;
   try {
     sessionStorage.setItem(CONTEXT_KEY, key);
@@ -74,41 +45,60 @@ function devLog(message: string, details: Record<string, unknown>) {
 }
 
 function isContextualPath(pathname: string) {
-  const path = normalizePath(pathname);
+  const path = normalizeNavPath(pathname);
   return path.startsWith("/movie/") || path.startsWith("/watch/");
 }
 
-function contextKeyForPath(pathname: string, hash = "") {
-  const source = sourceFromHash(hash);
-  if (source) return source;
+function contextKeyForLocation(pathname: string, search = "", hash = "", fallbackKey = "") {
+  const querySource = navSourceFromSearchParams(search);
+  if (querySource) return querySource;
+  const legacyHashSource = navSourceFromHash(hash);
+  if (legacyHashSource) return legacyHashSource;
   const key = contextFromPath(pathname);
   if (key) return key;
-  return isContextualPath(pathname) ? "" : readContext();
+  return isContextualPath(pathname) ? fallbackKey : readContext();
 }
 
-export function BottomNav({ initialPathname = "/" }: { initialPathname?: string }) {
+export function BottomNav({
+  initialPathname = "/",
+  initialSearch = "",
+  initialSourceFallback = ""
+}: {
+  initialPathname?: string;
+  initialSearch?: string;
+  initialSourceFallback?: string;
+}) {
   const currentPathname = typeof window === "undefined" ? initialPathname : window.location.pathname;
+  const currentSearch = typeof window === "undefined" ? initialSearch : window.location.search;
   const currentHash = typeof window === "undefined" ? "" : window.location.hash;
   const [pathname, setPathname] = useState(() =>
     currentPathname
   );
-  const [contextKey, setContextKey] = useState(() =>
-    contextKeyForPath(currentPathname, currentHash)
+  const [search, setSearch] = useState(() =>
+    currentSearch
   );
-  const activeKey = useMemo(() => activeKeyFromPath(pathname, contextKey), [pathname, contextKey]);
+  const [contextKey, setContextKey] = useState(() =>
+    contextKeyForLocation(currentPathname, currentSearch, currentHash, initialSourceFallback)
+  );
+  const activeKey = useMemo(() => {
+    const active = getActiveNavKey(pathname, search);
+    return active || (isContextualPath(pathname) ? contextKey : "");
+  }, [pathname, search, contextKey]);
 
   useEffect(() => {
     function syncPath(eventName: string) {
       const nextPathname = window.location.pathname;
-      writeContext(nextPathname);
-      const nextContextKey = contextKeyForPath(nextPathname, window.location.hash);
+      const nextSearch = window.location.search;
+      writeContext(nextPathname, nextSearch);
+      const nextContextKey = contextKeyForLocation(nextPathname, nextSearch, window.location.hash, initialSourceFallback);
       setPathname(nextPathname);
+      setSearch(nextSearch);
       setContextKey(nextContextKey);
-      devLog("NAV_ROUTE_CHANGE", { event: eventName, pathname: nextPathname });
-      devLog("NAV_ACTIVE_FROM_PATH", { pathname: nextPathname, active: activeKeyFromPath(nextPathname, nextContextKey) || null });
+      devLog("NAV_ROUTE_CHANGE", { event: eventName, pathname: nextPathname, search: nextSearch });
+      devLog("NAV_ACTIVE_FROM_PATH", { pathname: nextPathname, search: nextSearch, active: getActiveNavKey(nextPathname, nextSearch) || nextContextKey || null });
     }
 
-    writeContext(window.location.pathname);
+    writeContext(window.location.pathname, window.location.search);
     syncPath("mount");
 
     function handlePageLoad() {
@@ -150,8 +140,9 @@ export function BottomNav({ initialPathname = "/" }: { initialPathname?: string 
               href={item.href}
               key={item.href}
               onClick={() => {
-                writeContext(item.href);
+                writeContext(item.href, "");
                 setPathname(item.href);
+                setSearch("");
                 setContextKey(contextFromPath(item.href));
                 devLog("NAV_CLICK_TARGET", { href: item.href, active: item.key });
               }}

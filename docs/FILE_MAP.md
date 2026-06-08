@@ -9,6 +9,7 @@
 - `postcss.config.mjs`: Tailwind/PostCSS setup.
 - `CLOUDFLARE_CACHE.md`: operational cache documentation and binding expectations.
 - `docs/video-buffering-policy.md`: HLS playback buffering policy; documents client-side buffer/retry optimization and the rule against Worker-side video proxying or chunking.
+- `docs/navigation-active-state.md`: bottom-nav active-state policy for pathname, `?from=...` query context, movie metadata fallback, and legacy hash fallback.
 
 ## Routes
 
@@ -47,7 +48,7 @@
 - `components/SectionRow.tsx`: home row/grid wrapper around `MovieCard`.
 - `components/HeroSlider.tsx`: Smart Spotlight carousel and local preference ranking.
 - `components/TopBar.tsx`: sticky search and quick links.
-- `components/BottomNav.tsx`: fixed mobile bottom navigation, active tab resolver, category/source context derivation from `#from=...` URL fragments and pathname, `popstate`/`hashchange`/`pageshow` route restoration sync.
+- `components/BottomNav.tsx`: fixed mobile bottom navigation, active tab resolver, category/source context derivation from pathname, `?from=...` query params, optional movie fallback, and legacy hash fallback, with `popstate`/`hashchange`/`pageshow` route restoration sync.
 - `components/SearchSuggest.tsx`: search box and suggestions.
 - `components/LocalMovieActions.tsx`: favorites/history localStorage store and detail-page buttons.
 - `components/StoredMovieGrid.tsx`: favorites/history `MovieCard` grid.

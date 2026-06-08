@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, Clock, Play, Star, Users } from "lucide-react";
 import BaseLayout from "@/src/layouts/BaseLayout.astro";
 import { MovieActions } from "@/components/LocalMovieActions";
 import { episodeWatchKey } from "@/lib/episodes";
+import { hrefWithNavSource, inferNavSourceFromMovie, navSourceFromSearchParams } from "@/lib/navigation";
 import { displayEpisodeServerName, getMovie, movieDetailCachePolicy } from "@/lib/ophim";
 import { getDisplayRating, proxiedImage, stripHtml } from "@/lib/utils";
 
@@ -17,9 +18,11 @@ const title = `Bluesia Cinema - ${movie.originName || movie.name}`;
 const description = stripHtml(movie.content) || "Góc nhỏ của người đam mê phim";
 const metaImage = movie.thumb || movie.poster || "/icon-512.png";
 const displayRating = getDisplayRating(movie);
+const navSourceKey = navSourceFromSearchParams(Astro.url.searchParams) || inferNavSourceFromMovie(movie);
+const primaryWatchHref = hrefWithNavSource(`/watch/${movie.slug}${firstEp ? `?ep=${encodeURIComponent(episodeWatchKey(firstEp, 0))}` : ""}`, navSourceKey);
 ---
 
-<BaseLayout title={title} description={description} image={metaImage} type="video.movie">
+<BaseLayout title={title} description={description} image={metaImage} type="video.movie" navSourceFallback={navSourceKey}>
   <article>
     <section class="relative min-h-[560px] overflow-hidden">
       {heroImage && (
@@ -66,7 +69,7 @@ const displayRating = getDisplayRating(movie);
           </div>
         </div>
         <div class="mt-6 grid gap-3">
-          <a href={`/watch/${movie.slug}${firstEp ? `?ep=${encodeURIComponent(episodeWatchKey(firstEp, 0))}` : ""}`} class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gold px-5 py-4 text-base font-black text-black shadow-glow transition hover:scale-[1.01]">
+          <a href={primaryWatchHref} class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gold px-5 py-4 text-base font-black text-black shadow-glow transition hover:scale-[1.01]">
             <Play className="h-5 w-5 fill-black" /> Xem phim
           </a>
           <MovieActions client:load movie={movie} />
@@ -98,7 +101,7 @@ const displayRating = getDisplayRating(movie);
               <h3 class="mb-3 text-sm font-bold text-zinc-300">{displayEpisodeServerName(server.serverName)}</h3>
               <div class="grid grid-cols-4 gap-2 sm:grid-cols-6">
                 {server.serverData.map((ep, epIndex) => (
-                  <a href={`/watch/${movie.slug}?server=${serverIndex}&ep=${encodeURIComponent(episodeWatchKey(ep, epIndex))}`} class="rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-gold hover:text-black">
+                  <a href={hrefWithNavSource(`/watch/${movie.slug}?server=${serverIndex}&ep=${encodeURIComponent(episodeWatchKey(ep, epIndex))}`, navSourceKey)} class="rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-gold hover:text-black">
                     {ep.name || epIndex + 1}
                   </a>
                 ))}

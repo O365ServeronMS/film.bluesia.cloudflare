@@ -61,6 +61,9 @@
 
 ## Bottom Nav Source Tab Must Persist Across Child Pages
 
+- Navigation policy: category context for `/movie` and `/watch` pages must be passed with query param `?from=<category>`, not hash fragments. Hash fragments are unavailable during Astro/server/static render. Bottom nav active state should use pathname plus `from` query param and optional movie category fallback. Do not change Cloudflare/cache/video logic for nav active-state fixes.
+- The legacy hash fallback exists only for old links after client load; new generated links must use query params such as `/movie/slug?from=phim-le` and `/watch/slug?ep=full&from=phim-le`.
+
 - Detail and Watch/Episode pages are child pages of the source tab/category.
 - Opening Detail from a bottom-nav tab must keep that tab active on Detail and Watch.
 - Active tab must not be derived only from the current pathname because `/movie/...` and `/watch/...` are child routes.

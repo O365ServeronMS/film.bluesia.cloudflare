@@ -7,16 +7,19 @@ type Props = {
   description?: string;
   image?: string;
   type?: string;
+  navSourceFallback?: string;
 };
 
 const {
   title = "Bluesia Cinema",
   description = "Góc nhỏ của người đam mê phim",
   image = "/icon-512.png",
-  type = "website"
+  type = "website",
+  navSourceFallback = ""
 } = Astro.props;
 const canonical = new URL(Astro.url.pathname + Astro.url.search, "https://film.bluesia.net").toString();
 const pathname = Astro.url.pathname;
+const search = Astro.url.search;
 const isDev = import.meta.env.DEV;
 ---
 
@@ -79,8 +82,9 @@ const isDev = import.meta.env.DEV;
 
         const target = new URL(link.href, window.location.href);
         const source = currentNavSource();
-        if (source && !navSourceFromHash(target.hash) && (target.pathname.startsWith("/movie/") || target.pathname.startsWith("/watch/"))) {
-          target.hash = new URLSearchParams({ from: source }).toString();
+        if (source && !navSourceFromSearch(target.search) && (target.pathname.startsWith("/movie/") || target.pathname.startsWith("/watch/"))) {
+          target.searchParams.set("from", source);
+          if (navSourceFromHash(target.hash)) target.hash = "";
           link.href = target.toString();
         }
       }, true);
@@ -94,11 +98,19 @@ const isDev = import.meta.env.DEV;
 
       function navSourceFromPath(pathname) {
         if (pathname === "/") return "home";
+        if (pathname.startsWith("/phim-le")) return "phim-le";
         if (pathname.startsWith("/list/phim-le")) return "phim-le";
+        if (pathname.startsWith("/phim-bo")) return "phim-bo";
         if (pathname.startsWith("/list/phim-bo")) return "phim-bo";
+        if (pathname.startsWith("/tv-show") || pathname.startsWith("/tv-shows")) return "tv-shows";
         if (pathname.startsWith("/list/tv-shows")) return "tv-shows";
+        if (pathname.startsWith("/hoat-hinh")) return "hoat-hinh";
         if (pathname.startsWith("/list/hoat-hinh")) return "hoat-hinh";
         return "";
+      }
+
+      function navSourceFromSearch(search) {
+        return validNavSource(new URLSearchParams(String(search || "").replace(/^\?/, "")).get("from"));
       }
 
       function navSourceFromHash(hash) {
@@ -108,7 +120,7 @@ const isDev = import.meta.env.DEV;
       }
 
       function currentNavSource() {
-        return navSourceFromHash(window.location.hash) || navSourceFromPath(window.location.pathname);
+        return navSourceFromSearch(window.location.search) || navSourceFromHash(window.location.hash) || navSourceFromPath(window.location.pathname);
       }
 
       document.addEventListener("click", (event) => {
@@ -118,12 +130,13 @@ const isDev = import.meta.env.DEV;
         const target = new URL(link.href, window.location.href);
         if (target.origin !== window.location.origin) return;
         if (!target.pathname.startsWith("/movie/") && !target.pathname.startsWith("/watch/")) return;
-        if (navSourceFromHash(target.hash)) return;
+        if (navSourceFromSearch(target.search)) return;
 
-        const source = currentNavSource();
+        const source = navSourceFromHash(target.hash) || currentNavSource();
         if (!source) return;
 
-        target.hash = new URLSearchParams({ from: source }).toString();
+        target.searchParams.set("from", source);
+        if (navSourceFromHash(target.hash)) target.hash = "";
         link.href = target.toString();
       }, true);
     </script>
@@ -136,19 +149,28 @@ const isDev = import.meta.env.DEV;
           console.debug(`[nav] ${message}`, details || {});
         }
 
-        function navActiveFromPath(pathname, contextKey) {
+        function navSourceFromSearch(search) {
+          const key = new URLSearchParams(String(search || "").replace(/^\?/, "")).get("from") || "";
+          return ["home", "phim-le", "phim-bo", "tv-shows", "hoat-hinh"].includes(key) ? key : "";
+        }
+
+        function navActiveFromPath(pathname, search, contextKey) {
           if (pathname === "/") return "home";
+          if (pathname.startsWith("/phim-le")) return "phim-le";
           if (pathname.startsWith("/list/phim-le")) return "phim-le";
+          if (pathname.startsWith("/phim-bo")) return "phim-bo";
           if (pathname.startsWith("/list/phim-bo")) return "phim-bo";
+          if (pathname.startsWith("/tv-show") || pathname.startsWith("/tv-shows")) return "tv-shows";
           if (pathname.startsWith("/list/tv-shows")) return "tv-shows";
+          if (pathname.startsWith("/hoat-hinh")) return "hoat-hinh";
           if (pathname.startsWith("/list/hoat-hinh")) return "hoat-hinh";
           if (pathname.startsWith("/search")) return "search";
-          if (pathname.startsWith("/movie/") || pathname.startsWith("/watch/")) return contextKey || "";
+          if (pathname.startsWith("/movie/") || pathname.startsWith("/watch/")) return navSourceFromSearch(search) || contextKey || "";
           return "";
         }
 
         function navContextFromPath(pathname) {
-          const active = navActiveFromPath(pathname, "");
+          const active = navActiveFromPath(pathname, "", "");
           return active && !["home", "search", "settings"].includes(active) ? active : "";
         }
 
@@ -182,7 +204,7 @@ const isDev = import.meta.env.DEV;
           const contextKey = sessionStorage.getItem(NAV_CONTEXT_KEY) || "";
           navDebugLog("NAV_ACTIVE_FROM_PATH", {
             pathname: window.location.pathname,
-            active: navActiveFromPath(window.location.pathname, contextKey) || null
+            active: navActiveFromPath(window.location.pathname, window.location.search, contextKey) || null
           });
 
           try {
@@ -215,6 +237,6 @@ const isDev = import.meta.env.DEV;
     <main class="mx-auto min-h-screen w-full max-w-[720px] safe-bottom">
       <slot />
     </main>
-    <BottomNav client:load initialPathname={pathname} />
+    <BottomNav client:load initialPathname={pathname} initialSearch={search} initialSourceFallback={navSourceFallback} />
   </body>
 </html>
