@@ -33,6 +33,13 @@
 - Keep favorite/heart, Full/episode, and quality badge positions stable when changing poster overlay content unless the task explicitly changes them.
 - Existing UI uses Tailwind classes and lucide-react icons; reuse those patterns.
 
+## Navigation
+
+- Browser Back from a movie detail page must return to the exact previous category/tab page, including `/list/phim-le`, `/list/phim-bo`, `/list/tv-shows`, and `/list/hoat-hinh` states.
+- Do not reset category state to `Trang chủ` during hydration, `pageshow` history restoration, `popstate`, or route restoration.
+- Do not use replace navigation for category-to-detail transitions unless explicitly requested; movie card links should remain normal anchors that preserve browser history.
+- Manual check when navigation code changes: open `Phim lẻ`, click a poster, press browser Back, and verify the URL and active bottom tab return to `Phim lẻ` without a home-tab flash. Repeat for `Phim bộ`, `TV Show`, and `Hoạt hình` if the change touches route derivation.
+
 ## Player
 
 - Direct HLS playback uses `HlsVideo.tsx` with dynamic imports for Artplayer and hls.js.

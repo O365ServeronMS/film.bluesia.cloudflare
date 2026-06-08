@@ -61,19 +61,32 @@ function devLog(message: string, details: Record<string, unknown>) {
   if (import.meta.env.DEV) console.debug(`[nav] ${message}`, details);
 }
 
+function isContextualPath(pathname: string) {
+  const path = normalizePath(pathname);
+  return path.startsWith("/movie/") || path.startsWith("/watch/");
+}
+
+function contextKeyForPath(pathname: string) {
+  const key = contextFromPath(pathname);
+  if (key) return key;
+  return isContextualPath(pathname) ? readContext() : "";
+}
+
 export function BottomNav({ initialPathname = "/" }: { initialPathname?: string }) {
+  const currentPathname = typeof window === "undefined" ? initialPathname : window.location.pathname;
   const [pathname, setPathname] = useState(() =>
-    typeof window === "undefined" ? initialPathname : window.location.pathname
+    currentPathname
   );
   const [contextKey, setContextKey] = useState(() =>
-    contextFromPath(typeof window === "undefined" ? initialPathname : window.location.pathname)
+    contextKeyForPath(currentPathname)
   );
   const activeKey = useMemo(() => activeKeyFromPath(pathname, contextKey), [pathname, contextKey]);
 
   useEffect(() => {
     function syncPath(eventName: string) {
       const nextPathname = window.location.pathname;
-      const nextContextKey = readContext() || contextFromPath(nextPathname);
+      writeContext(nextPathname);
+      const nextContextKey = contextKeyForPath(nextPathname);
       setPathname(nextPathname);
       setContextKey(nextContextKey);
       devLog("NAV_ROUTE_CHANGE", { event: eventName, pathname: nextPathname });
@@ -91,11 +104,17 @@ export function BottomNav({ initialPathname = "/" }: { initialPathname?: string 
       syncPath("popstate");
     }
 
+    function handlePageShow(event: PageTransitionEvent) {
+      syncPath(event.persisted ? "pageshow-persisted" : "pageshow");
+    }
+
     window.addEventListener("astro:page-load", handlePageLoad);
     window.addEventListener("popstate", handlePopState);
+    window.addEventListener("pageshow", handlePageShow);
     return () => {
       window.removeEventListener("astro:page-load", handlePageLoad);
       window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("pageshow", handlePageShow);
     };
   }, []);
 

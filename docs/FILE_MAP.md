@@ -36,17 +36,17 @@
 
 - `src/worker.ts`: Cloudflare Worker exports; passes Astro fetch through and adds scheduled OPhim refresh.
 - `src/middleware.ts`: HTML cache policies, Cache API read/write, refresh bypass, no-store rules.
-- `src/layouts/BaseLayout.astro`: head metadata, app shell, poster fallback script, dev nav debug script, bottom nav island.
+- `src/layouts/BaseLayout.astro`: head metadata, app shell, poster fallback script, same-origin `data-nav-back` browser-history handler, dev nav debug script, bottom nav island.
 - `src/env.d.ts`: Cloudflare binding/runtime type declarations.
 - `src/styles/globals.css`: global CSS/Tailwind styles.
 
 ## Components
 
-- `components/MovieCard.tsx`: poster card UI used by home/list/search/favorites/history.
+- `components/MovieCard.tsx`: poster card UI and normal `/movie/[slug]` anchor links used by home/list/search/favorites/history.
 - `components/SectionRow.tsx`: home row/grid wrapper around `MovieCard`.
 - `components/HeroSlider.tsx`: Smart Spotlight carousel and local preference ranking.
 - `components/TopBar.tsx`: sticky search and quick links.
-- `components/BottomNav.tsx`: fixed mobile bottom navigation and active-state context.
+- `components/BottomNav.tsx`: fixed mobile bottom navigation, category active-state derivation from pathname, sessionStorage context for movie/watch routes, `popstate`/`pageshow` route restoration sync.
 - `components/SearchSuggest.tsx`: search box and suggestions.
 - `components/LocalMovieActions.tsx`: favorites/history localStorage store and detail-page buttons.
 - `components/StoredMovieGrid.tsx`: favorites/history `MovieCard` grid.
@@ -78,10 +78,10 @@
 
 - Movie cards / poster UI: `rg -n "MovieCard|poster|episodeCurrent|quality|Heart|Star" components src lib`.
 - Rating badges: `rg -n "rating|IMDb|TMDB|getDisplayRating|getDisplayRatings|Star" components lib src`.
-- Navigation: `rg -n "BottomNav|TopBar|nav|CONTEXT_KEY|SearchSuggest" components src`.
+- Navigation: `rg -n "BottomNav|TopBar|nav|CONTEXT_KEY|data-nav-back|pageshow|popstate|pathname|SearchSuggest" components src`.
+- Category back/active-tab regressions: check `components/BottomNav.tsx`, `src/layouts/BaseLayout.astro`, `components/MovieCard.tsx`, `src/pages/list/[type].astro`, and `src/pages/movie/[slug].astro` before scanning elsewhere.
 - Video player / HLS: `rg -n "HlsVideo|Artplayer|hls.js|m3u8|IframePlayerFacade|vsembed" components src lib`.
 - Cloudflare Worker/Pages logic: `rg -n "worker|scheduled|createExports|cloudflare|wrangler|adapter|caches.default" src lib astro.config.mjs wrangler.jsonc`.
 - KV/R2/D1/cache logic: `rg -n "KV|MOVIE_METADATA|IMAGE_CACHE|R2|D1|cache|TTL|HTML_CACHE_VERSION|writeBudget" src lib CLOUDFLARE_CACHE.md wrangler.jsonc`.
 - SEO / robots / sitemap: `rg -n "canonical|og:|twitter|robots|sitemap|manifest|_headers" src public`.
 - OPhim metadata shape: `rg -n "normalizeCard|SourceMovie|SourceRating|tmdb|imdb|episode" lib src`.
-
