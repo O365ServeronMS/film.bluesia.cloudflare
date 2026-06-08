@@ -65,6 +65,18 @@ if (playerEmbed || m3u8) {
     <link rel="preconnect" href="https://img.ophim.cc" />
     <link rel="dns-prefetch" href="https://vsembed.ru" />
     <link rel="dns-prefetch" href="https://vsembed.su" />
+    <script is:inline>
+      document.addEventListener("click", (event) => {
+        const link = event.target instanceof Element ? event.target.closest("a[data-watch-episode-link]") : null;
+        if (!(link instanceof HTMLAnchorElement)) return;
+
+        const target = new URL(link.href, window.location.href);
+        if (target.origin !== window.location.origin || target.pathname !== window.location.pathname) return;
+
+        event.preventDefault();
+        window.location.replace(target.toString());
+      }, true);
+    </script>
   </Fragment>
   <article class="min-h-screen bg-black">
     <WatchRecorder client:load movie={movie} />
@@ -102,7 +114,7 @@ if (playerEmbed || m3u8) {
               const currentKey = episode ? episodeWatchKey(episode, server?.serverData.indexOf(episode) ?? 0) : "";
               const active = svIndex === serverIndex && (episodeWatchKey(ep, epIndex) === currentKey || (epIndex === 0 && !epKey));
               return (
-                <a href={`/watch/${movie.slug}?server=${svIndex}&ep=${encodeURIComponent(episodeWatchKey(ep, epIndex))}`} class={active ? "rounded-xl bg-gold px-3 py-2 text-center text-xs font-black text-black" : "rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-white/15"}>
+                <a href={`/watch/${movie.slug}?server=${svIndex}&ep=${encodeURIComponent(episodeWatchKey(ep, epIndex))}`} data-watch-episode-link class={active ? "rounded-xl bg-gold px-3 py-2 text-center text-xs font-black text-black" : "rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-white/15"}>
                   {ep.name || epIndex + 1}
                 </a>
               );

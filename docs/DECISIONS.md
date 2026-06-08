@@ -44,6 +44,15 @@
 - In-page up/back controls from detail or watch may use `data-nav-back` with URL fallbacks so direct-opened detail/watch URLs still work.
 - Manual check when navigation code changes: open `Phim lẻ`, click a poster, click `Xem phim`, press browser Back to return to Detail, then press browser Back again and verify the URL and active bottom tab return to `Phim lẻ` without a Detail <-> Watch loop or home-tab flash. Repeat for `Trang chủ`, `Phim bộ`, `TV Show`, and `Hoạt hình` if the change touches route derivation.
 
+## Episode Selection Must Not Pollute Browser History
+
+- Episode changes inside Watch/Episode are same-level state changes, not new hierarchy levels.
+- Selecting episodes must not push a new browser history entry per episode.
+- Back from any selected episode must return to Detail.
+- Use replace navigation or internal state for episode-to-episode changes.
+- Do not use `history.go(-N)`, `setTimeout`, or stack-skipping hacks.
+- Manual check when episode navigation changes: open a series detail, click `Xem phim`, select Episode 3, Episode 5, then Episode 6, press browser Back once, and verify the current page is Detail rather than Episode 5 or Episode 3. Press Back again and verify the original category/list page is restored.
+
 ## Player
 
 - Direct HLS playback uses `HlsVideo.tsx` with dynamic imports for Artplayer and hls.js.

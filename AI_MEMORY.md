@@ -106,6 +106,7 @@
 - Category/list state is URL-addressable through `/list/[type]` plus query params; bottom active state is derived from pathname in `components/BottomNav.tsx`.
 - Detail pages live at `/movie/[slug]`; watch pages live at `/watch/[slug]` with episode/server query state.
 - Movie cards and the `Xem phim` button use normal anchors so browser history keeps the previous hierarchy entry.
+- Detail -> Watch creates one history entry; episode-to-episode changes inside `src/pages/watch/[slug].astro` use replace navigation through `data-watch-episode-link`, so Back from Watch returns to Detail regardless of how many episodes were selected.
 - `src/layouts/BaseLayout.astro` owns the same-origin `data-nav-back` handler for up-controls with URL fallbacks on direct-opened pages.
 - Anti-regression rule: Browser Back must move Episode/Watch -> Detail -> previous Category/List without Detail <-> Watch loops and without resetting the active tab to `Trang chủ` unless home was the real previous page.
 
