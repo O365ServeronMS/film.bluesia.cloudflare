@@ -5,7 +5,7 @@ import { HlsVideo } from "@/components/HlsVideo";
 import { IframePlayerFacade } from "@/components/IframePlayerFacade";
 import { WatchRecorder } from "@/components/WatchRecorder";
 import { episodeWatchKey, findEpisodeByWatchKey } from "@/lib/episodes";
-import { fallbackReturnToForSource, getBackHref, hrefWithReturnTo, inferNavSourceFromMovie, navSourceFromSearchParams, returnToFromSearchParams } from "@/lib/navigation";
+import { fallbackReturnToForSource, getWatchBackHref, hrefWithReturnTo, inferNavSourceFromMovie, navSourceFromSearchParams, returnToFromSearchParams } from "@/lib/navigation";
 import { displayEpisodeServerName, getMovie } from "@/lib/ophim";
 import { proxiedImage } from "@/lib/utils";
 
@@ -54,7 +54,7 @@ const playerPoster = movie.thumb || movie.poster ? proxiedImage(movie.thumb || m
 const navSourceKey = navSourceFromSearchParams(Astro.url.searchParams) || inferNavSourceFromMovie(movie);
 const returnTo = returnToFromSearchParams(Astro.url.searchParams) || fallbackReturnToForSource(navSourceKey);
 const detailHref = hrefWithReturnTo(`/movie/${movie.slug}`, returnTo, navSourceKey);
-const backHref = getBackHref(Astro.url.searchParams, { source: navSourceKey, fallbackPath: detailHref });
+const backHref = getWatchBackHref(Astro.url.pathname, Astro.url.searchParams, { source: navSourceKey, fallbackPath: detailHref });
 
 if (playerEmbed || m3u8) {
   console.log("[cache] VIDEO_DIRECT_SOURCE_CONFIRMED", { slug, serverIndex, hasEmbed: Boolean(playerEmbed), hasM3u8: Boolean(m3u8) });

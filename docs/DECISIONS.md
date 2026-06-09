@@ -7,7 +7,7 @@
 - Detail pages preserve the same `returnTo` in watch and episode links; watch pages preserve it in detail and same-watch episode links.
 - Active bottom-nav context is derived from `returnTo` first, then legacy `from` parsing and movie metadata fallback.
 - Same-watch episode changes may still replace the current watch URL to avoid polluting Back history with episode-to-episode entries; this is separate from normal list -> detail -> watch navigation.
-- In-page back buttons must prioritize safe returnTo navigation over history.back(). Browser-native Back cannot restore a list page when a detail page is opened in a new tab because the new tab has no previous history entry. Do not create fake history entries for this.
+- In-page back buttons must follow the page hierarchy. On `/watch` pages, back returns to `/movie/[slug]` first while preserving safe `returnTo`; on `/movie` pages, back may use safe `returnTo` to restore the original list/home page. Browser-native Back cannot restore a list page when a detail page is opened in a new tab because the new tab has no previous history entry. Do not create fake history entries for this.
 
 ## 2026-06-09 Adaptive Client-Side Prefetch
 
@@ -76,6 +76,7 @@
 - Normal category-to-detail and detail-to-watch user navigation should remain normal anchors that preserve browser history; do not use `replaceState` in a way that destroys the previous category/list entry.
 - Active bottom tab/category must be derived from URL/history and must not reset to `Trang chủ` by default during hydration or route restoration.
 - In-page up/back controls from detail or watch may use `data-nav-back` with URL fallbacks so direct-opened detail/watch URLs still work.
+- Navigation hierarchy decision: FilmBluesia uses the hierarchy List/Home tab -> `/movie/[slug]` -> `/watch/[slug]`. The `returnTo` query parameter stores the original list/home destination. It must not always be treated as the immediate back destination. On `/watch` pages, the in-page back button must return to `/movie/[slug]` first while preserving `returnTo`. On `/movie` pages, the in-page back button may use `returnTo` to return to the original list/home page. Do not use fake browser history or `history.replaceState` to force this behavior.
 - Manual check when navigation code changes: open `Phim lẻ`, click a poster, click `Xem phim`, press browser Back to return to Detail, then press browser Back again and verify the URL and active bottom tab return to `Phim lẻ` without a Detail <-> Watch loop or home-tab flash. Repeat for `Trang chủ`, `Phim bộ`, `TV Show`, and `Hoạt hình` if the change touches route derivation.
 
 ## Episode Selection Must Not Pollute Browser History

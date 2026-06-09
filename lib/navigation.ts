@@ -91,6 +91,48 @@ export function getFallbackListPath({
   return fallbackReturnToForSource(source) || safeInternalPath(fallbackPath) || "/";
 }
 
+export function getFallbackListHref(context?: {
+  source?: string | null;
+  fallbackPath?: string | null;
+}) {
+  return getFallbackListPath(context);
+}
+
+export function getMovieBackHref(
+  searchParams?: URLSearchParams | string | null,
+  context?: {
+    source?: string | null;
+    fallbackPath?: string | null;
+  }
+) {
+  return getSafeReturnTo(searchParams) || getFallbackListHref(context);
+}
+
+export function buildMovieHrefFromWatch(pathname: string, searchParams?: URLSearchParams | string | null) {
+  const watchPath = safeInternalPath(pathname);
+  if (!watchPath) return "";
+  const slug = new URL(watchPath, SITE_ORIGIN).pathname.match(/^\/watch\/([^/?#]+)/)?.[1] || "";
+  if (!slug) return "";
+
+  const params = new URLSearchParams();
+  const returnTo = getSafeReturnTo(searchParams);
+  if (returnTo) params.set("returnTo", returnTo);
+
+  const search = params.toString();
+  return `/movie/${slug}${search ? `?${search}` : ""}`;
+}
+
+export function getWatchBackHref(
+  pathname: string,
+  searchParams?: URLSearchParams | string | null,
+  context?: {
+    source?: string | null;
+    fallbackPath?: string | null;
+  }
+) {
+  return buildMovieHrefFromWatch(pathname, searchParams) || getMovieBackHref(searchParams, context);
+}
+
 export function getBackHref(
   searchParams?: URLSearchParams | string | null,
   context?: {
@@ -98,7 +140,7 @@ export function getBackHref(
     fallbackPath?: string | null;
   }
 ) {
-  return getSafeReturnTo(searchParams) || getFallbackListPath(context);
+  return getMovieBackHref(searchParams, context);
 }
 
 export function navSourceFromReturnTo(returnTo?: string | null) {

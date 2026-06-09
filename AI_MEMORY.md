@@ -117,6 +117,7 @@
 - Detail pages live at `/movie/[slug]`; watch pages live at `/watch/[slug]` with episode/server query state.
 - Movie cards and the `Xem phim` button use normal anchors so browser history keeps the previous hierarchy entry.
 - Category/List source context persists through Detail and Watch using `returnTo=<encoded path+search>` query params added by generated links and `src/layouts/BaseLayout.astro`; hash fragments and `from` params are browser-only legacy fallbacks.
+- `returnTo` stores the original list/home destination, not always the immediate back destination. In-page back on `/watch/[slug]` must go to `/movie/[slug]` first while preserving `returnTo`; in-page back on `/movie/[slug]` may navigate to the safe `returnTo` list/home destination.
 - Active bottom nav is resolved from explicit source context first, then route, then reliable stored fallback for non-child routes, otherwise none. Detail/watch pages must not clear the active tab simply because they are child routes.
 - Detail -> Watch creates one history entry; episode-to-episode changes inside `src/pages/watch/[slug].astro` use replace navigation through `data-watch-episode-link`, so Back from Watch returns to Detail regardless of how many episodes were selected.
 - `src/layouts/BaseLayout.astro` owns the same-origin `data-nav-back` handler for up-controls with URL fallbacks on direct-opened pages.

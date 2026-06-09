@@ -71,23 +71,9 @@ const isDev = import.meta.env.DEV;
         if (!(link instanceof HTMLAnchorElement)) return;
         if (link.origin !== window.location.origin) return;
 
-        const explicitReturnTo = returnToFromSearch(window.location.search);
-        if (explicitReturnTo) {
-          event.preventDefault();
-          window.location.assign(explicitReturnTo);
-          return;
-        }
-
         const target = new URL(link.href, window.location.href);
         const targetPath = safeInternalPath(target.pathname + target.search);
         if (targetPath) {
-          const fallbackReturnTo = currentReturnTo();
-          if (fallbackReturnTo && !returnToFromSearch(target.search) && (target.pathname.startsWith("/movie/") || target.pathname.startsWith("/watch/"))) {
-            target.searchParams.set("returnTo", fallbackReturnTo);
-            target.searchParams.delete("from");
-            if (navSourceFromHash(target.hash)) target.hash = "";
-            link.href = target.toString();
-          }
           return;
         }
 
