@@ -81,9 +81,10 @@ const isDev = import.meta.env.DEV;
         }
 
         const target = new URL(link.href, window.location.href);
-        const source = currentNavSource();
-        if (source && !navSourceFromSearch(target.search) && (target.pathname.startsWith("/movie/") || target.pathname.startsWith("/watch/"))) {
-          target.searchParams.set("from", source);
+        const returnTo = currentReturnTo();
+        if (returnTo && !returnToFromSearch(target.search) && (target.pathname.startsWith("/movie/") || target.pathname.startsWith("/watch/"))) {
+          target.searchParams.set("returnTo", returnTo);
+          target.searchParams.delete("from");
           if (navSourceFromHash(target.hash)) target.hash = "";
           link.href = target.toString();
         }
@@ -110,7 +111,8 @@ const isDev = import.meta.env.DEV;
       }
 
       function navSourceFromSearch(search) {
-        return validNavSource(new URLSearchParams(String(search || "").replace(/^\?/, "")).get("from"));
+        const params = new URLSearchParams(String(search || "").replace(/^\?/, ""));
+        return navSourceFromReturnTo(params.get("returnTo")) || validNavSource(params.get("from"));
       }
 
       function navSourceFromHash(hash) {
@@ -119,8 +121,51 @@ const isDev = import.meta.env.DEV;
         return validNavSource(new URLSearchParams(clean).get("from"));
       }
 
+      function safeInternalPath(value) {
+        const raw = String(value || "").trim();
+        if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\") || /[\u0000-\u001f\u007f]/.test(raw)) return "";
+        try {
+          const url = new URL(raw, window.location.origin);
+          if (url.origin !== window.location.origin) return "";
+          return url.pathname + url.search;
+        } catch {
+          return "";
+        }
+      }
+
+      function returnToFromSearch(search) {
+        return safeInternalPath(new URLSearchParams(String(search || "").replace(/^\?/, "")).get("returnTo"));
+      }
+
+      function navSourceFromReturnTo(returnTo) {
+        const path = safeInternalPath(returnTo);
+        if (!path) return "";
+        return navSourceFromPath(new URL(path, window.location.origin).pathname);
+      }
+
+      function fallbackReturnToForSource(source) {
+        switch (validNavSource(source)) {
+          case "phim-le":
+            return "/phim-le";
+          case "phim-bo":
+            return "/phim-bo";
+          case "tv-shows":
+            return "/tv-show";
+          case "hoat-hinh":
+            return "/hoat-hinh";
+          case "home":
+            return "/";
+          default:
+            return "";
+        }
+      }
+
       function currentNavSource() {
         return navSourceFromSearch(window.location.search) || navSourceFromPath(window.location.pathname) || navSourceFromHash(window.location.hash);
+      }
+
+      function currentReturnTo() {
+        return returnToFromSearch(window.location.search) || safeInternalPath(window.location.pathname + window.location.search) || fallbackReturnToForSource(currentNavSource());
       }
 
       document.addEventListener("click", (event) => {
@@ -130,12 +175,14 @@ const isDev = import.meta.env.DEV;
         const target = new URL(link.href, window.location.href);
         if (target.origin !== window.location.origin) return;
         if (!target.pathname.startsWith("/movie/") && !target.pathname.startsWith("/watch/")) return;
-        if (navSourceFromSearch(target.search)) return;
+        if (returnToFromSearch(target.search)) return;
 
-        const source = navSourceFromHash(target.hash) || currentNavSource();
-        if (!source) return;
+        const legacySource = navSourceFromSearch(target.search) || navSourceFromHash(target.hash);
+        const returnTo = fallbackReturnToForSource(legacySource) || currentReturnTo();
+        if (!returnTo) return;
 
-        target.searchParams.set("from", source);
+        target.searchParams.set("returnTo", returnTo);
+        target.searchParams.delete("from");
         if (navSourceFromHash(target.hash)) target.hash = "";
         link.href = target.toString();
       }, true);
@@ -150,7 +197,13 @@ const isDev = import.meta.env.DEV;
         }
 
         function navSourceFromSearch(search) {
-          const key = new URLSearchParams(String(search || "").replace(/^\?/, "")).get("from") || "";
+          const params = new URLSearchParams(String(search || "").replace(/^\?/, ""));
+          const returnTo = params.get("returnTo") || "";
+          if (returnTo.startsWith("/phim-le") || returnTo.startsWith("/list/phim-le")) return "phim-le";
+          if (returnTo.startsWith("/phim-bo") || returnTo.startsWith("/list/phim-bo")) return "phim-bo";
+          if (returnTo.startsWith("/tv-show") || returnTo.startsWith("/tv-shows") || returnTo.startsWith("/list/tv-shows")) return "tv-shows";
+          if (returnTo.startsWith("/hoat-hinh") || returnTo.startsWith("/list/hoat-hinh")) return "hoat-hinh";
+          const key = params.get("from") || "";
           return ["home", "phim-le", "phim-bo", "tv-shows", "hoat-hinh"].includes(key) ? key : "";
         }
 

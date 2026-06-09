@@ -9,7 +9,7 @@
 - `postcss.config.mjs`: Tailwind/PostCSS setup.
 - `docs/CLOUDFLARE_CACHE.md`: operational cache documentation and binding expectations.
 - `docs/video-buffering-policy.md`: HLS playback buffering policy; documents client-side buffer/retry optimization and the rule against Worker-side video proxying or chunking.
-- `docs/navigation-active-state.md`: bottom-nav active-state policy for pathname, `?from=...` query context, movie metadata fallback, and legacy hash fallback.
+- `docs/navigation-active-state.md`: bottom-nav active-state policy for pathname, `returnTo` query context, movie metadata fallback, and legacy hash fallback.
 
 ## Routes
 
@@ -38,7 +38,7 @@
 
 - `src/worker.ts`: Cloudflare Worker exports; passes Astro fetch through and adds scheduled OPhim refresh.
 - `src/middleware.ts`: HTML cache policies, Cache API read/write, refresh bypass, no-store rules.
-- `src/layouts/BaseLayout.astro`: head metadata, app shell, poster fallback script, source-tab fragment propagation for `/movie` and `/watch` links, same-origin `data-nav-back` browser-history handler, dev nav debug script, bottom nav island.
+- `src/layouts/BaseLayout.astro`: head metadata, app shell, poster fallback script, return context propagation for `/movie` and `/watch` links, same-origin `data-nav-back` browser-history handler, dev nav debug script, bottom nav island.
 - `src/env.d.ts`: Cloudflare binding/runtime type declarations.
 - `src/styles/globals.css`: global CSS/Tailwind styles.
 
@@ -48,7 +48,7 @@
 - `components/SectionRow.tsx`: home row/grid wrapper around `MovieCard`.
 - `components/HeroSlider.tsx`: Smart Spotlight carousel and local preference ranking.
 - `components/TopBar.tsx`: sticky search and quick links.
-- `components/BottomNav.tsx`: fixed mobile bottom navigation, active tab resolver, category/source context derivation from pathname, `?from=...` query params, optional movie fallback, and legacy hash fallback, with `popstate`/`hashchange`/`pageshow` route restoration sync.
+- `components/BottomNav.tsx`: fixed mobile bottom navigation, active tab resolver, category/source context derivation from pathname and `returnTo`, optional movie fallback, and legacy hash fallback, with `popstate`/`hashchange`/`pageshow` route restoration sync.
 - `components/SearchSuggest.tsx`: search box and suggestions.
 - `components/LocalMovieActions.tsx`: favorites/history localStorage store and detail-page buttons.
 - `components/StoredMovieGrid.tsx`: favorites/history `MovieCard` grid.
@@ -92,7 +92,7 @@
 - Category back/active-tab regressions: check `components/BottomNav.tsx`, `src/layouts/BaseLayout.astro`, `components/MovieCard.tsx`, `src/pages/list/[type].astro`, `src/pages/movie/[slug].astro`, and `src/pages/watch/[slug].astro` before scanning elsewhere.
 - Detail/watch hierarchy loops: `rg -n "Xem phim|data-nav-back|/watch/|/movie/|history.back|popstate|pageshow" src components`.
 - Episode selection history: `rg -n "data-watch-episode-link|location.replace|episodeWatchKey|findEpisodeByWatchKey|serverIndex|epKey" src/pages/watch src lib`.
-- Source tab propagation: `rg -n "from|validNavSource|currentNavSource|sourceFromHash|data-watch-episode-link|activeKeyFromPath|contextKeyForPath" src/layouts components src/pages`.
+- Source tab propagation: `rg -n "returnTo|validNavSource|currentReturnTo|data-watch-episode-link|activeKeyFromPath|contextKeyForPath" src/layouts components src/pages`.
 - Video player / HLS: `rg -n "HlsVideo|hls.js|m3u8|IframePlayerFacade|vsembed|Vidsrc" components src lib`.
 - Video buffering policy: `docs/video-buffering-policy.md` and the Player section in `docs/DECISIONS.md`.
 - Cloudflare Worker/Pages logic: `rg -n "worker|scheduled|createExports|cloudflare|wrangler|adapter|caches.default" src lib astro.config.mjs wrangler.jsonc`.

@@ -1,6 +1,6 @@
 import { Heart, Star } from "lucide-react";
 import type { MovieCard as MovieCardType } from "@/lib/types";
-import { hrefWithNavSource } from "@/lib/navigation";
+import { hrefWithReturnTo } from "@/lib/navigation";
 import { getDisplayRatings, proxiedImage, proxiedImageCandidateSrcSet } from "@/lib/utils";
 
 function validHttpImage(value?: string) {
@@ -18,13 +18,15 @@ export function MovieCard({
   compact = false,
   headingLevel = 3,
   priority = false,
-  navSourceKey = ""
+  navSourceKey = "",
+  returnTo = ""
 }: {
   movie: MovieCardType;
   compact?: boolean;
   headingLevel?: 2 | 3;
   priority?: boolean;
   navSourceKey?: string;
+  returnTo?: string;
 }) {
   const posterUrl = validHttpImage(movie.poster) || validHttpImage(movie.thumb);
   const fallbackUrl = validHttpImage(movie.thumb) || validHttpImage(movie.poster);
@@ -40,7 +42,7 @@ export function MovieCard({
   const Title = headingLevel === 2 ? "h2" : "h3";
   const displayRatings = getDisplayRatings(movie);
 
-  const detailHref = hrefWithNavSource(`/movie/${movie.slug}`, navSourceKey);
+  const detailHref = hrefWithReturnTo(`/movie/${movie.slug}`, returnTo, navSourceKey);
 
   return (
     <a href={detailHref} className="group block min-w-0">

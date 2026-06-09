@@ -3,7 +3,7 @@ import { ArrowLeft, Calendar, Clock, Play, Star, Users } from "lucide-react";
 import BaseLayout from "@/src/layouts/BaseLayout.astro";
 import { MovieActions } from "@/components/LocalMovieActions";
 import { episodeWatchKey } from "@/lib/episodes";
-import { hrefWithNavSource, inferNavSourceFromMovie, navSourceFromSearchParams } from "@/lib/navigation";
+import { fallbackReturnToForSource, hrefWithReturnTo, inferNavSourceFromMovie, navSourceFromSearchParams, returnToFromSearchParams } from "@/lib/navigation";
 import { displayEpisodeServerName, getMovie, movieDetailCachePolicy } from "@/lib/ophim";
 import { getDisplayRating, proxiedImage, stripHtml } from "@/lib/utils";
 
@@ -19,7 +19,9 @@ const description = stripHtml(movie.content) || "Góc nhỏ của người đam 
 const metaImage = movie.thumb || movie.poster || "/icon-512.png";
 const displayRating = getDisplayRating(movie);
 const navSourceKey = navSourceFromSearchParams(Astro.url.searchParams) || inferNavSourceFromMovie(movie);
-const primaryWatchHref = hrefWithNavSource(`/watch/${movie.slug}${firstEp ? `?ep=${encodeURIComponent(episodeWatchKey(firstEp, 0))}` : ""}`, navSourceKey);
+const returnTo = returnToFromSearchParams(Astro.url.searchParams) || fallbackReturnToForSource(navSourceKey);
+const primaryWatchHref = hrefWithReturnTo(`/watch/${movie.slug}${firstEp ? `?ep=${encodeURIComponent(episodeWatchKey(firstEp, 0))}` : ""}`, returnTo, navSourceKey);
+const backHref = returnTo || "/";
 ---
 
 <BaseLayout title={title} description={description} image={metaImage} type="video.movie" navSourceFallback={navSourceKey}>
@@ -40,7 +42,7 @@ const primaryWatchHref = hrefWithNavSource(`/watch/${movie.slug}${firstEp ? `?ep
       )}
       <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-[#07090f]/80 to-[#07090f]"></div>
       <div class="relative z-10 px-4 pb-8 pt-5">
-        <a href="/" data-nav-back class="grid h-11 w-11 place-items-center rounded-full bg-black/50 text-white backdrop-blur">
+        <a href={backHref} data-nav-back class="grid h-11 w-11 place-items-center rounded-full bg-black/50 text-white backdrop-blur">
           <ArrowLeft className="h-5 w-5" />
         </a>
         <div class="mt-10 flex gap-4">
@@ -101,7 +103,7 @@ const primaryWatchHref = hrefWithNavSource(`/watch/${movie.slug}${firstEp ? `?ep
               <h3 class="mb-3 text-sm font-bold text-zinc-300">{displayEpisodeServerName(server.serverName)}</h3>
               <div class="grid grid-cols-4 gap-2 sm:grid-cols-6">
                 {server.serverData.map((ep, epIndex) => (
-                  <a href={hrefWithNavSource(`/watch/${movie.slug}?server=${serverIndex}&ep=${encodeURIComponent(episodeWatchKey(ep, epIndex))}`, navSourceKey)} class="rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-gold hover:text-black">
+                  <a href={hrefWithReturnTo(`/watch/${movie.slug}?server=${serverIndex}&ep=${encodeURIComponent(episodeWatchKey(ep, epIndex))}`, returnTo, navSourceKey)} class="rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-gold hover:text-black">
                     {ep.name || epIndex + 1}
                   </a>
                 ))}

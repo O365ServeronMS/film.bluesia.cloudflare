@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import BaseLayout from "@/src/layouts/BaseLayout.astro";
 import { MovieCard } from "@/components/MovieCard";
 import { TopBar } from "@/components/TopBar";
+import { createReturnToPath } from "@/lib/navigation";
 import { getList } from "@/lib/ophim";
 
 const type = Astro.params.type || "phim-le";
@@ -21,6 +22,7 @@ const categoryParam = String(Astro.url.searchParams.get("category") || "").trim(
 const country = supportsCountryFilter && quickCountries.some((item) => item.slug === countryParam) ? countryParam : "";
 const category = supportsCategoryFilter && quickCategories.some((item) => item.slug === categoryParam) ? categoryParam : "";
 const data = await getList(type, page, 30, country, category);
+const returnTo = createReturnToPath(Astro.url.pathname, Astro.url.search);
 const currentPage = data.page || page;
 const totalPages = data.totalPages;
 const groupStart = Math.floor((Math.max(1, currentPage) - 1) / 10) * 10 + 1;
@@ -72,7 +74,7 @@ function listHref(nextPage: number, filters = activeFilters) {
 
   <section class="grid grid-cols-3 gap-3 px-4 pt-5 sm:grid-cols-4">
     {data.items.map((movie, index) => (
-      <MovieCard movie={movie} compact headingLevel={2} priority={index < 4} navSourceKey={type} />
+      <MovieCard movie={movie} compact headingLevel={2} priority={index < 4} navSourceKey={type} returnTo={returnTo} />
     ))}
   </section>
 

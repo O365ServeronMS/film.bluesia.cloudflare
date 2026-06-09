@@ -4,6 +4,7 @@
 import { KeyboardEvent, TouchEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info, Play, Sparkles, Star } from "lucide-react";
 import type { MovieCard } from "@/lib/types";
+import { hrefWithReturnTo } from "@/lib/navigation";
 import { baseSpotlightScore, normalizedLabelSet } from "@/lib/spotlight";
 import { getDisplayRating, proxiedImage, proxiedImageCandidateSrcSet } from "@/lib/utils";
 
@@ -150,6 +151,7 @@ export function HeroSlider({ items }: { items: MovieCard[] }) {
 
   const visibleIndex = activeIndex < slides.length ? activeIndex : 0;
   const active = slides[visibleIndex];
+  const activeReturnTo = "/";
   const activeImage = active.thumb || active.poster;
   const displayRating = getDisplayRating(active);
   const isPersonalized = Boolean(personalData && (personalData.favorites.length || personalData.history.length));
@@ -260,10 +262,10 @@ export function HeroSlider({ items }: { items: MovieCard[] }) {
           <h1 className="line-clamp-2 min-h-[4.5rem] max-w-[82%] text-3xl font-black leading-tight tracking-tight text-white drop-shadow-lg sm:max-w-[74%]">{active.name}</h1>
           <p className="mt-1 line-clamp-1 min-h-5 max-w-[86%] text-sm italic text-zinc-200 sm:max-w-[78%]">{active.originName || active.name} · {active.year || "N/A"}{active.country ? ` · ${active.country}` : ""}</p>
           <div className="mt-5 flex items-center gap-3">
-            <a href={`/watch/${active.slug}`} aria-label={`Xem phim ${active.name}`} className="grid h-16 w-16 place-items-center rounded-full bg-gold text-black shadow-glow transition hover:scale-105">
+            <a href={hrefWithReturnTo(`/watch/${active.slug}`, activeReturnTo, "home")} aria-label={`Xem phim ${active.name}`} className="grid h-16 w-16 place-items-center rounded-full bg-gold text-black shadow-glow transition hover:scale-105">
               <Play className="ml-1 h-8 w-8 fill-black" />
             </a>
-            <a href={`/movie/${active.slug}`} aria-label={`Chi tiết phim ${active.name}`} className="grid h-14 w-14 place-items-center rounded-full bg-white/20 text-white backdrop-blur transition hover:bg-white/25">
+            <a href={hrefWithReturnTo(`/movie/${active.slug}`, activeReturnTo, "home")} aria-label={`Chi tiết phim ${active.name}`} className="grid h-14 w-14 place-items-center rounded-full bg-white/20 text-white backdrop-blur transition hover:bg-white/25">
               <Info className="h-7 w-7" />
             </a>
           </div>

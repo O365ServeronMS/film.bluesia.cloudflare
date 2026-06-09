@@ -29,8 +29,8 @@
 - Preserve mobile-first layout and the `max-w-[720px]` app shell unless the task explicitly changes it.
 - Do not change unrelated cache keys, cache TTLs, binding names, or cache version strings unless explicitly requested.
 - Do not commit secrets, account IDs, tokens, or private deployment details.
-- Navigation policy: never generate new category context links with `#from=...`. Use query param `?from=<category>` or `&from=<category>`. Hash fallback may exist only for legacy cached links. `/movie` and `/watch` pages must preserve category context for bottom nav active state.
-- Navigation policy: category context for `/movie` and `/watch` pages must be passed with query param `?from=<category>`, not hash fragments. Hash fragments are unavailable during Astro/server/static render. Bottom nav active state should use pathname plus `from` query param and optional movie category fallback. Do not change Cloudflare/cache/video logic for nav active-state fixes.
+- Navigation policy: never generate new category context links with hash fragments. Use `returnTo=<encoded path+search>` for `/movie` and `/watch` navigation so the exact source page can be restored. Hash and `from` fallback may exist only for legacy cached links. `/movie` and `/watch` pages must preserve category context for bottom nav active state.
+- Navigation policy: category context for `/movie` and `/watch` pages must be passed with the `returnTo` query param, not hash fragments. Hash fragments are unavailable during Astro/server/static render. Bottom nav active state should use pathname plus `returnTo` and optional movie category fallback. Do not change Cloudflare/cache/video logic for nav active-state fixes.
 
 ## Verification Rules
 

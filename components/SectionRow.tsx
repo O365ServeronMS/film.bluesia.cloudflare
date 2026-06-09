@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import type { MovieCard as MovieCardType } from "@/lib/types";
 import { MovieCard } from "@/components/MovieCard";
 
-export function SectionRow({ title, href, items }: { title: string; href: string; items: MovieCardType[] }) {
+export function SectionRow({ title, href, items, returnTo = "" }: { title: string; href: string; items: MovieCardType[]; returnTo?: string }) {
   if (!items.length) return null;
   return (
     <section className="mt-8 px-4">
@@ -16,10 +16,10 @@ export function SectionRow({ title, href, items }: { title: string; href: string
         {items.slice(0, 8).map((movie, index) =>
           index >= 6 ? (
             <div key={movie.slug} className="hidden sm:block">
-              <MovieCard movie={movie} compact />
+              <MovieCard movie={movie} compact returnTo={returnTo} />
             </div>
           ) : (
-            <MovieCard key={movie.slug} movie={movie} compact />
+            <MovieCard key={movie.slug} movie={movie} compact returnTo={returnTo} />
           )
         )}
       </div>

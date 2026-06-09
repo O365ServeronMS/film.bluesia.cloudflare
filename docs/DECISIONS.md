@@ -1,5 +1,13 @@
 # Decisions And Anti-Regression Rules
 
+## 2026-06-09 Return-To Navigation Context
+
+- Use full returnTo path+search for list → detail → watch navigation. Do not rely on from-only or hash fragments. Do not replace browser history during normal forward navigation.
+- Generated movie detail links carry `returnTo` with the encoded current pathname and search, so paginated and filtered list state is preserved.
+- Detail pages preserve the same `returnTo` in watch and episode links; watch pages preserve it in detail and same-watch episode links.
+- Active bottom-nav context is derived from `returnTo` first, then legacy `from` parsing and movie metadata fallback.
+- Same-watch episode changes may still replace the current watch URL to avoid polluting Back history with episode-to-episode entries; this is separate from normal list -> detail -> watch navigation.
+
 ## 2026-06-09 Adaptive Client-Side Prefetch
 
 - Added adaptive client-side prefetch in `src/client/adaptivePrefetch.ts`, initialized globally from `src/layouts/BaseLayout.astro`.
@@ -56,7 +64,7 @@
 
 - Category/List -> Detail -> Episode/Watch is the canonical hierarchy.
 - Browser Back must move one hierarchy level up and must never loop Detail <-> Episode/Watch.
-- Browser Back from a movie detail page must return to the exact previous category/tab page, including `/list/phim-le`, `/list/phim-bo`, `/list/tv-shows`, and `/list/hoat-hinh` states.
+- Browser Back from a movie detail page must return to the exact previous category/tab page, including `/list/phim-le`, `/list/phim-bo`, `/list/tv-shows`, and `/list/hoat-hinh` states with query params.
 - Detail pages must not auto-reopen Episode Selection/Watch on hydration, `pageshow`, `popstate`, or route restoration.
 - Normal category-to-detail and detail-to-watch user navigation should remain normal anchors that preserve browser history; do not use `replaceState` in a way that destroys the previous category/list entry.
 - Active bottom tab/category must be derived from URL/history and must not reset to `Trang chủ` by default during hydration or route restoration.
@@ -74,8 +82,8 @@
 
 ## Bottom Nav Source Tab Must Persist Across Child Pages
 
-- Navigation policy: category context for `/movie` and `/watch` pages must be passed with query param `?from=<category>`, not hash fragments. Hash fragments are unavailable during Astro/server/static render. Bottom nav active state should use pathname plus `from` query param and optional movie category fallback. Do not change Cloudflare/cache/video logic for nav active-state fixes.
-- The legacy hash fallback exists only for old links after client load; new generated links must use query params such as `/movie/slug?from=phim-le` and `/watch/slug?ep=full&from=phim-le`.
+- Navigation policy: category context for `/movie` and `/watch` pages should be carried by `returnTo=<encoded path+search>`, not hash fragments. Hash fragments are unavailable during Astro/server/static render. Bottom nav active state should use pathname plus `returnTo` and optional movie category fallback. Do not change Cloudflare/cache/video logic for nav active-state fixes.
+- The legacy `from` and hash fallback exists only for old cached links after client load. New generated child links must use `returnTo`.
 
 - Detail and Watch/Episode pages are child pages of the source tab/category.
 - Opening Detail from a bottom-nav tab must keep that tab active on Detail and Watch.

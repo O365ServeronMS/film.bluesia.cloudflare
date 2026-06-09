@@ -5,7 +5,7 @@ import { HlsVideo } from "@/components/HlsVideo";
 import { IframePlayerFacade } from "@/components/IframePlayerFacade";
 import { WatchRecorder } from "@/components/WatchRecorder";
 import { episodeWatchKey, findEpisodeByWatchKey } from "@/lib/episodes";
-import { hrefWithNavSource, inferNavSourceFromMovie, navSourceFromSearchParams } from "@/lib/navigation";
+import { fallbackReturnToForSource, hrefWithReturnTo, inferNavSourceFromMovie, navSourceFromSearchParams, returnToFromSearchParams } from "@/lib/navigation";
 import { displayEpisodeServerName, getMovie } from "@/lib/ophim";
 import { proxiedImage } from "@/lib/utils";
 
@@ -52,7 +52,8 @@ const useEmbedPlayer = Boolean(playerEmbed) && (forceEmbed || (mobileUA && !forc
 const title = `Watching - ${movie.originName || movie.name}`;
 const playerPoster = movie.thumb || movie.poster ? proxiedImage(movie.thumb || movie.poster, "backdrop-desktop") : undefined;
 const navSourceKey = navSourceFromSearchParams(Astro.url.searchParams) || inferNavSourceFromMovie(movie);
-const detailHref = hrefWithNavSource(`/movie/${movie.slug}`, navSourceKey);
+const returnTo = returnToFromSearchParams(Astro.url.searchParams) || fallbackReturnToForSource(navSourceKey);
+const detailHref = hrefWithReturnTo(`/movie/${movie.slug}`, returnTo, navSourceKey);
 
 if (playerEmbed || m3u8) {
   console.log("[cache] VIDEO_DIRECT_SOURCE_CONFIRMED", { slug, serverIndex, hasEmbed: Boolean(playerEmbed), hasM3u8: Boolean(m3u8) });
@@ -117,7 +118,7 @@ if (playerEmbed || m3u8) {
               const currentKey = episode ? episodeWatchKey(episode, server?.serverData.indexOf(episode) ?? 0) : "";
               const active = svIndex === serverIndex && (episodeWatchKey(ep, epIndex) === currentKey || (epIndex === 0 && !epKey));
               return (
-                <a href={hrefWithNavSource(`/watch/${movie.slug}?server=${svIndex}&ep=${encodeURIComponent(episodeWatchKey(ep, epIndex))}`, navSourceKey)} data-watch-episode-link class={active ? "rounded-xl bg-gold px-3 py-2 text-center text-xs font-black text-black" : "rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-white/15"}>
+                <a href={hrefWithReturnTo(`/watch/${movie.slug}?server=${svIndex}&ep=${encodeURIComponent(episodeWatchKey(ep, epIndex))}`, returnTo, navSourceKey)} data-watch-episode-link class={active ? "rounded-xl bg-gold px-3 py-2 text-center text-xs font-black text-black" : "rounded-xl bg-white/10 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-white/15"}>
                   {ep.name || epIndex + 1}
                 </a>
               );

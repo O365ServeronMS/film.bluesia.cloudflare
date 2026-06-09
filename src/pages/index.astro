@@ -3,10 +3,12 @@ import BaseLayout from "@/src/layouts/BaseLayout.astro";
 import { HeroSlider } from "@/components/HeroSlider";
 import { SectionRow } from "@/components/SectionRow";
 import { TopBar } from "@/components/TopBar";
+import { createReturnToPath } from "@/lib/navigation";
 import { getHome } from "@/lib/ophim";
 import { proxiedImageCandidateSrcSet } from "@/lib/utils";
 
 const home = await getHome();
+const returnTo = createReturnToPath(Astro.url.pathname, Astro.url.search);
 const firstHeroImage = home.hero[0]?.thumb || home.hero[0]?.poster;
 const heroPreloadSrcSet = firstHeroImage
   ? proxiedImageCandidateSrcSet(firstHeroImage, [
@@ -25,6 +27,6 @@ const heroPreloadSrcSet = firstHeroImage
   <TopBar client:load />
   <HeroSlider client:load items={home.hero} />
   {home.sections.map((section) => (
-    <SectionRow title={section.title} href={section.href} items={section.items} />
+    <SectionRow title={section.title} href={section.href} items={section.items} returnTo={returnTo} />
   ))}
 </BaseLayout>

@@ -3,10 +3,12 @@ import { X } from "lucide-react";
 import BaseLayout from "@/src/layouts/BaseLayout.astro";
 import { MovieCard } from "@/components/MovieCard";
 import { SearchSuggest } from "@/components/SearchSuggest";
+import { createReturnToPath } from "@/lib/navigation";
 import { searchMovies } from "@/lib/ophim";
 
 const q = Astro.url.searchParams.get("q") || "";
 const page = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
+const returnTo = createReturnToPath(Astro.url.pathname, Astro.url.search);
 const data = q ? await searchMovies(q, page, 30) : { title: "Tìm kiếm", items: [], page };
 ---
 
@@ -27,7 +29,7 @@ const data = q ? await searchMovies(q, page, 30) : { title: "Tìm kiếm", items
 
   {data.items.length > 0 ? (
     <section class="grid grid-cols-3 gap-3 px-4 pt-5 sm:grid-cols-4">
-      {data.items.map((movie) => <MovieCard movie={movie} compact />)}
+      {data.items.map((movie) => <MovieCard movie={movie} compact returnTo={returnTo} />)}
     </section>
   ) : q ? (
     <div class="mx-4 mt-8 rounded-3xl border border-dashed border-white/15 bg-white/5 p-8 text-center text-sm text-zinc-400">Không tìm thấy kết quả phù hợp.</div>
