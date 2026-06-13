@@ -3,7 +3,7 @@ import { imageCacheTtlSeconds, readBinaryCache, writeBinaryCache } from "@/lib/c
 
 const FALLBACK_IMAGE_ROOTS = ["https://img.ophim.live", "https://img.ophim.cc"];
 const IMAGE_STALE_WHILE_REVALIDATE_SECONDS = 86400;
-const IMAGE_CACHE_PREFIX = "cf-img-jun-2026b";
+const IMAGE_CACHE_PREFIX = "cf-img-jun-2026";
 
 type ImageProfileName =
   | "poster-mobile"
@@ -160,7 +160,7 @@ function notModified(etag: string) {
 
 function edgeCacheRequest(requestUrl: URL, profile: ImageProfile, normalizedUrl: string) {
   const edgeUrl = new URL(requestUrl.origin + requestUrl.pathname);
-  edgeUrl.searchParams.set("cache_version", IMAGE_CACHE_PREFIX);
+  edgeUrl.searchParams.set("cache_version", `${IMAGE_CACHE_PREFIX}:reject-large-origin-v1`);
   edgeUrl.searchParams.set("profile", profile.name);
   edgeUrl.searchParams.set("url", normalizedUrl);
   return new Request(edgeUrl.toString(), { method: "GET" });
@@ -248,6 +248,17 @@ export const GET: APIRoute = async ({ request, url }) => {
 
   const cached = await readBinaryCache("images", key, imageCacheTtlSeconds());
   if (cached) {
+    const cachedContentType = usableImageContentType(cached.contentType) || cached.contentType;
+    if (originFallbackTooLarge(profile, cachedContentType, cached.body.byteLength)) {
+      cacheLog("IMAGE_R2_MISS", {
+        key,
+        reason: "rejected-large-cached-origin",
+        contentType: cached.contentType,
+        profile: profile.name,
+        bytes: cached.body.byteLength,
+        maxBytes: profile.maxOriginFallbackBytes
+      });
+    } else {
     if (cached.etag && ifNoneMatch.includes(cached.etag)) return notModified(cached.etag);
     const response = new Response(cached.body, {
       headers: imageHeaders({
@@ -255,12 +266,13 @@ export const GET: APIRoute = async ({ request, url }) => {
         sourceUrl: cached.sourceUrl,
         profile: profile.name,
         etag: cached.etag,
-        contentType: cached.contentType,
-        transformStatus: imageTransformStatus(cached.contentType)
+        contentType: cachedContentType,
+        transformStatus: imageTransformStatus(cachedContentType)
       })
     });
     await putEdgeCache(edgeRequest, response);
     return response;
+    }
   }
 
   let lastStatus: number | string = 0;

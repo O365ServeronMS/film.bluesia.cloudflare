@@ -10,11 +10,11 @@
 ## 2026-06-13 Image Proxy Origin Fallback
 
 - The image proxy must not return the `No image` SVG when OPhim returns a successful valid image content type. Cloudflare image transform may return WebP on supported plans, but production can also return the upstream JPEG/PNG/AVIF directly; those responses are valid and should be cached with their actual `Content-Type`.
-- Keep fixed image profiles and the active R2 namespace `cf-img-jun-2026b`; do not create arbitrary width/quality variants.
+- Keep fixed image profiles and the active R2 namespace `cf-img-jun-2026`; do not create arbitrary width/quality variants.
 - Oversized untransformed origin images must not be served or written into profile cache keys. `poster-mobile` must never silently become a multi-megabyte original JPEG.
 - Above-the-fold decorative art should prefer poster over thumb/backdrop because some OPhim thumb files are multi-megabyte. Do not preload or high-priority fetch large backdrop profiles unless Cloudflare transform is verified active.
 - Cache bump for this performance change: HTML cache version is `Jun26-v3-img-perf` so home and movie detail HTML stops preloading/eager-loading heavy backdrop images from stale cached HTML.
-- Cache bump for oversized origin rejection: image cache namespace is `cf-img-jun-2026b` and the internal edge cache key includes that namespace, so previously cached large JPEG profile objects are bypassed in both R2 and edge cache.
+- Cache bump for oversized origin rejection: keep R2 namespace `cf-img-jun-2026` so existing small WebP objects remain usable, but include `reject-large-origin-v1` in the internal edge cache key and reject oversized cached origin JPEG/PNG/AVIF objects before serving them.
 
 ## 2026-06-09 Return-To Navigation Context
 

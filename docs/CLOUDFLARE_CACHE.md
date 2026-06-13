@@ -80,7 +80,7 @@ The image proxy writes only fixed profile keys to R2. It prefers Cloudflare-tran
 R2 key format:
 
 ```text
-cf-img-jun-2026b/{profile}/{hash-of-normalized-original-url}.webp
+cf-img-jun-2026/{profile}/{hash-of-normalized-original-url}.webp
 ```
 
 Allowed profiles:
@@ -92,4 +92,4 @@ Allowed profiles:
 - `thumb-mobile`: 320px, quality 65
 - `thumb-desktop`: 480px, quality 70
 
-New image responses flow through edge cache, then R2, then OPhim origin. The internal edge cache key includes the image cache namespace so old oversized edge objects are bypassed when the namespace changes. Failed, empty, non-image, or oversized untransformed origin responses are not written to R2.
+New image responses flow through edge cache, then R2, then OPhim origin. The internal edge cache key includes an image behavior version so old oversized edge objects are bypassed while existing small R2 WebP objects remain usable. Failed, empty, non-image, oversized cached origin, or oversized untransformed origin responses are not written to or served from R2.
