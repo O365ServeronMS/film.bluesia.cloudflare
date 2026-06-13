@@ -160,6 +160,7 @@ function notModified(etag: string) {
 
 function edgeCacheRequest(requestUrl: URL, profile: ImageProfile, normalizedUrl: string) {
   const edgeUrl = new URL(requestUrl.origin + requestUrl.pathname);
+  edgeUrl.searchParams.set("cache_version", IMAGE_CACHE_PREFIX);
   edgeUrl.searchParams.set("profile", profile.name);
   edgeUrl.searchParams.set("url", normalizedUrl);
   return new Request(edgeUrl.toString(), { method: "GET" });

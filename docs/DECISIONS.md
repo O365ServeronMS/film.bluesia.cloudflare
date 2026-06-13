@@ -14,7 +14,7 @@
 - Oversized untransformed origin images must not be served or written into profile cache keys. `poster-mobile` must never silently become a multi-megabyte original JPEG.
 - Above-the-fold decorative art should prefer poster over thumb/backdrop because some OPhim thumb files are multi-megabyte. Do not preload or high-priority fetch large backdrop profiles unless Cloudflare transform is verified active.
 - Cache bump for this performance change: HTML cache version is `Jun26-v3-img-perf` so home and movie detail HTML stops preloading/eager-loading heavy backdrop images from stale cached HTML.
-- Cache bump for oversized origin rejection: image cache namespace is `cf-img-jun-2026b` so previously cached large JPEG profile objects are bypassed.
+- Cache bump for oversized origin rejection: image cache namespace is `cf-img-jun-2026b` and the internal edge cache key includes that namespace, so previously cached large JPEG profile objects are bypassed in both R2 and edge cache.
 
 ## 2026-06-09 Return-To Navigation Context
 

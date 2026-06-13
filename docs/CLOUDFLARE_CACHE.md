@@ -92,4 +92,4 @@ Allowed profiles:
 - `thumb-mobile`: 320px, quality 65
 - `thumb-desktop`: 480px, quality 70
 
-New image responses flow through edge cache, then R2, then OPhim origin. Failed, empty, or non-image responses are not written to R2.
+New image responses flow through edge cache, then R2, then OPhim origin. The internal edge cache key includes the image cache namespace so old oversized edge objects are bypassed when the namespace changes. Failed, empty, non-image, or oversized untransformed origin responses are not written to R2.
