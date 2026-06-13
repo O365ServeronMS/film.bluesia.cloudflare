@@ -152,7 +152,7 @@ export function HeroSlider({ items }: { items: MovieCard[] }) {
   const visibleIndex = activeIndex < slides.length ? activeIndex : 0;
   const active = slides[visibleIndex];
   const activeReturnTo = "/";
-  const activeImage = active.thumb || active.poster;
+  const activeImage = active.poster || active.thumb;
   const displayRating = getDisplayRating(active);
   const isPersonalized = Boolean(personalData && (personalData.favorites.length || personalData.history.length));
   const canNavigate = slides.length > 1;

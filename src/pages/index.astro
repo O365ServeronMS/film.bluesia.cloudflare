@@ -9,7 +9,7 @@ import { proxiedImageCandidateSrcSet } from "@/lib/utils";
 
 const home = await getHome();
 const returnTo = createReturnToPath(Astro.url.pathname, Astro.url.search);
-const firstHeroImage = home.hero[0]?.thumb || home.hero[0]?.poster;
+const firstHeroImage = home.hero[0]?.poster || home.hero[0]?.thumb;
 const heroPreloadSrcSet = firstHeroImage
   ? proxiedImageCandidateSrcSet(firstHeroImage, [
       { profile: "backdrop-mobile", width: 780 },

@@ -12,7 +12,7 @@ const movie = await getMovie(slug);
 const movieCache = movieDetailCachePolicy(movie);
 Astro.response.headers.set("X-Film-Bluesia-Movie-Cache-Class", movieCache.cacheClass);
 const firstEp = movie.episodes[0]?.serverData[0];
-const heroImage = movie.thumb || movie.poster;
+const heroImage = movie.poster || movie.thumb;
 const posterImage = movie.poster || movie.thumb;
 const title = `Bluesia Cinema - ${movie.originName || movie.name}`;
 const description = stripHtml(movie.content) || "Góc nhỏ của người đam mê phim";
@@ -34,8 +34,8 @@ const backHref = getBackHref(Astro.url.searchParams, { source: navSourceKey, fal
             src={proxiedImage(heroImage, "backdrop-mobile")}
             alt={movie.name}
             class="absolute inset-0 h-full w-full object-cover opacity-60"
-            fetchpriority="high"
-            loading="eager"
+            fetchpriority="low"
+            loading="lazy"
             decoding="async"
           />
         </picture>
