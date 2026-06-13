@@ -91,6 +91,7 @@
 ## OPhim Implementation Notes
 
 - `normalizeCard()` maps source movie payloads to `MovieCard`.
+- 2026-06-13 image incident: newly added movies rendered `No image` when source payloads used camelCase or alternate image fields. Keep image mapping in `lib/movie-images.ts` and support `posterUrl`, `poster_url`, `poster`, `thumbUrl`, `thumb_url`, `thumb`, `thumbnail`, `image_url`, and `image` before allowing an empty normalized poster/thumb.
 - `movieDetailFromPayload()` builds `MovieDetail`, episode server data, labels, and optional VSEmbed fallback server.
 - `getHome()` fetches latest, single, series, animation, TV, cinema, and filtered list sections, then builds Smart Spotlight candidates.
 - `getList()` supports quick country/category filters for selected list types.

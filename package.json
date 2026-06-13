@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "test:image-normalization": "node --no-warnings --experimental-strip-types scripts/test-image-normalization.mjs",
     "preview": "astro build && wrangler dev dist/_worker.js/index.js --assets dist",
     "deploy": "astro build && wrangler deploy dist/_worker.js/index.js --assets dist"
   },

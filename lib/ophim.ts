@@ -28,6 +28,7 @@ import {
 import { buildVsembedServer } from "@/lib/vsembed";
 import { normalizedEpisodeName, normalizedEpisodeSlug } from "@/lib/episodes";
 import { setCacheBypassRefresh } from "@/lib/runtime-env";
+import { normalizeMovieImage } from "@/lib/movie-images";
 
 export const IMAGE_CACHE_TTL_SECONDS = 1296000;
 export const LIST_CACHE_TTL_SECONDS = 1800;
@@ -42,10 +43,6 @@ export const OPHIM_REFRESH_MAX_MOVIES = REFRESH_BATCH_SIZE;
 export const OPHIM_REFRESH_DELAY_MS = 1500;
 
 const BASE_URL = (process.env.OPHIM_BASE_URL || "https://ophim1.com").replace(/\/$/, "");
-const CDN_FALLBACKS = [
-  "https://img.ophim.live/uploads/movies",
-  "https://img.ophim.cc/uploads/movies"
-];
 
 const listLabels: Record<string, string> = {
   "phim-le": "Phim lẻ",
@@ -254,43 +251,6 @@ async function fetchMoviePayload(slug: string): Promise<SourceMoviePayload> {
   return (await fetchMoviePayloadWithInfo(slug)).payload;
 }
 
-function cdnMovieFolder(cdn?: string) {
-  const base = (cdn || CDN_FALLBACKS[0]).replace(/\/$/, "");
-  return /\/uploads\/movies$/i.test(base) ? base : `${base}/uploads/movies`;
-}
-
-function cleanImage(input?: string, cdn?: string) {
-  if (!input) return "";
-  const src = String(input).trim();
-  if (!src) return "";
-
-  if (src.startsWith("//")) {
-    return cleanImage(`https:${src}`, cdn);
-  }
-
-  if (/^https?:\/\//i.test(src)) {
-    try {
-      const url = new URL(src);
-      const fileName = url.pathname.split("/").filter(Boolean).pop();
-      const looksLikeOphimImage = /(^|\.)ophim\./i.test(url.hostname) || url.hostname.startsWith("img.");
-      if (looksLikeOphimImage && fileName && !/\/uploads\/movies\//i.test(url.pathname)) {
-        return `${url.origin}/uploads/movies/${fileName}`;
-      }
-    } catch {
-      return src;
-    }
-    return src;
-  }
-
-  const withoutLeadingSlash = src.replace(/^\/+/, "");
-  if (/^uploads\/movies\//i.test(withoutLeadingSlash)) {
-    const base = (cdn || CDN_FALLBACKS[0]).replace(/\/uploads\/movies\/?$/i, "").replace(/\/$/, "");
-    return `${base}/${withoutLeadingSlash}`;
-  }
-
-  return `${cdnMovieFolder(cdn)}/${withoutLeadingSlash}`;
-}
-
 function pickName(raw: SourceMovie) {
   return raw?.name || raw?.title || raw?.origin_name || "Không rõ tên";
 }
@@ -351,13 +311,14 @@ export function normalizeCard(raw: SourceMovie, cdn?: string): MovieCard {
   );
   const categoryName = labelText(raw?.category);
   const countryName = labelText(raw?.country);
+  const image = normalizeMovieImage(raw, cdn);
 
   return {
     name: pickName(raw),
     originName: raw?.origin_name || raw?.originName || raw?.original_name || undefined,
     slug: raw?.slug || raw?._id || raw?.id || "",
-    poster: cleanImage(raw?.poster_url || raw?.poster || raw?.thumb_url || raw?.thumb || raw?.thumbnail, cdn),
-    thumb: cleanImage(raw?.thumb_url || raw?.thumb || raw?.poster_url || raw?.poster || raw?.thumbnail, cdn),
+    poster: image.poster,
+    thumb: image.thumb,
     year: raw?.year || raw?.publish_year || undefined,
     quality: raw?.quality || raw?.video_quality || raw?.quality_name || undefined,
     lang: raw?.lang || raw?.language || undefined,

@@ -39,7 +39,7 @@
   ],
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://film.bluesia.net",
-    "HTML_CACHE_VERSION": "Jun26-v1",
+    "HTML_CACHE_VERSION": "Jun26-v2-img-fields",
     "BLUESIA_IMAGE_TRANSFORM_MODE": "cloudflare-free",
     "OPHIM_REFRESH_MAX_MOVIES": "24",
     "OPHIM_REFRESH_DELAY_MS": "1500"

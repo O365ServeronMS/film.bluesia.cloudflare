@@ -79,11 +79,15 @@ export type SourceMovie = {
   originName?: string;
   original_name?: string;
   slug?: string;
+  posterUrl?: string;
   poster_url?: string;
   poster?: string;
+  thumbUrl?: string;
   thumb_url?: string;
   thumb?: string;
   thumbnail?: string;
+  image?: string;
+  image_url?: string;
   year?: number | string;
   publish_year?: number | string;
   quality?: string;

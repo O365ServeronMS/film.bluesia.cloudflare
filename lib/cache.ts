@@ -1,5 +1,7 @@
 import { cacheBypassRefresh, runtimeEnv } from "@/lib/runtime-env";
 
+const MOVIE_LIST_METADATA_CACHE_VERSION = "img-fields-v2";
+
 const IMAGE_TTL_SECONDS = 60 * 60 * 24 * 15;
 const DETAIL_TTL_SECONDS = 60 * 60 * 24 * 90;
 const LIST_TTL_SECONDS = 60 * 30;
@@ -258,10 +260,10 @@ function keySlugFromUrl(key: string) {
 async function metadataKey(namespace: string, key: string) {
   if (namespace === "metadata-detail") {
     const slug = keySlugFromUrl(key);
-    return slug ? `detail:${slug}` : `detail:${await sha256(key)}`;
+    return slug ? `detail:${MOVIE_LIST_METADATA_CACHE_VERSION}:${slug}` : `detail:${MOVIE_LIST_METADATA_CACHE_VERSION}:${await sha256(key)}`;
   }
   if (namespace === "metadata-search") return `search:${await sha256(key)}`;
-  if (namespace === "metadata-list") return `list:${await sha256(key)}`;
+  if (namespace === "metadata-list") return `list:${MOVIE_LIST_METADATA_CACHE_VERSION}:${await sha256(key)}`;
   if (namespace === "metadata-taxonomy") return `taxonomy:${await sha256(key)}`;
   return `metadata:${namespace}:${await sha256(key)}`;
 }

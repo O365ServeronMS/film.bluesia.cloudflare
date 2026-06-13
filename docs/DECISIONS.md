@@ -1,5 +1,12 @@
 # Decisions And Anti-Regression Rules
 
+## 2026-06-13 Movie Image Normalization
+
+- Movie image mapping belongs in the data layer, not in `MovieCard` or route templates. `lib/movie-images.ts` owns `normalizeMovieImage()`, `resolveMoviePoster()`, and `normalizePosterUrl()`, and `lib/ophim.ts` must normalize cards through that helper.
+- OPhim/source movie payloads may expose image fields as `posterUrl`, `poster_url`, `poster`, `thumbUrl`, `thumb_url`, `thumb`, `thumbnail`, `image_url`, or `image`. Prefer poster fields, fall back to thumb fields, and only render `No image` when all usable image fields are absent.
+- Relative image paths must be normalized through the existing OPhim image CDN base logic. Do not hardcode a new image domain or duplicate source-specific mapping inside UI components.
+- Cache bump for this incident: metadata KV list/detail keys include `img-fields-v2` (`list:img-fields-v2:<hash>`, `detail:img-fields-v2:<slug>`), and HTML cache version is `Jun26-v2-img-fields` so home/list/movie HTML is regenerated with corrected poster data.
+
 ## 2026-06-09 Return-To Navigation Context
 
 - Use full returnTo path+search for list → detail → watch navigation. Do not rely on from-only or hash fragments. Do not replace browser history during normal forward navigation.
