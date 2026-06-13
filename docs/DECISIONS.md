@@ -7,6 +7,11 @@
 - Relative image paths must be normalized through the existing OPhim image CDN base logic. Do not hardcode a new image domain or duplicate source-specific mapping inside UI components.
 - Cache bump for this incident: metadata KV list/detail keys include `img-fields-v2` (`list:img-fields-v2:<hash>`, `detail:img-fields-v2:<slug>`), and HTML cache version is `Jun26-v2-img-fields` so home/list/movie HTML is regenerated with corrected poster data.
 
+## 2026-06-13 Image Proxy Origin Fallback
+
+- The image proxy must not return the `No image` SVG when OPhim returns a successful valid image content type. Cloudflare image transform may return WebP on supported plans, but production can also return the upstream JPEG/PNG/AVIF directly; those responses are valid and should be cached with their actual `Content-Type`.
+- Keep fixed image profiles and the active R2 namespace `cf-img-jun-2026`; do not create arbitrary width/quality variants or change the image namespace for this fallback.
+
 ## 2026-06-09 Return-To Navigation Context
 
 - Use full returnTo path+search for list → detail → watch navigation. Do not rely on from-only or hash fragments. Do not replace browser history during normal forward navigation.

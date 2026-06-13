@@ -122,16 +122,19 @@ function imageHeaders(options: {
   sourceUrl?: string;
   profile?: ImageProfileName;
   etag?: string;
+  contentType?: string;
 }) {
   const cacheControl = cacheControlHeader();
+  const contentType = options.contentType || "image/webp";
+  const imageFormat = contentType.split(";")[0]?.split("/")[1] || "";
   return {
-    "Content-Type": "image/webp",
+    "Content-Type": contentType,
     "Cache-Control": cacheControl,
     "CDN-Cache-Control": cacheControl,
     "Cloudflare-CDN-Cache-Control": cacheControl,
     "X-Film-Bluesia-Net-Cache": options.cacheStatus,
     "X-Film-Bluesia-Net-Cache-Type": "image",
-    "X-Film-Bluesia-Net-Image-Format": "webp",
+    "X-Film-Bluesia-Net-Image-Format": imageFormat,
     "X-Film-Bluesia-Net-Image-Profile": options.profile || "",
     "X-Film-Bluesia-Net-Image-Variant": "cloudflare-profile-v3",
     ...(options.etag ? { "ETag": `"${options.etag}"` } : {}),
@@ -203,6 +206,11 @@ async function putEdgeCache(request: Request, response: Response) {
   }
 }
 
+function usableImageContentType(value: string) {
+  const contentType = value.toLowerCase().split(";")[0].trim();
+  return /^(image\/webp|image\/jpeg|image\/jpg|image\/png|image\/avif)$/.test(contentType) ? contentType : "";
+}
+
 export const GET: APIRoute = async ({ request, url }) => {
   const rawUrl = url.searchParams.get("url") || "";
   const imageUrl = decodeURIComponent(rawUrl);
@@ -233,7 +241,8 @@ export const GET: APIRoute = async ({ request, url }) => {
         cacheStatus: "HIT",
         sourceUrl: cached.sourceUrl,
         profile: profile.name,
-        etag: cached.etag
+        etag: cached.etag,
+        contentType: cached.contentType
       })
     });
     await putEdgeCache(edgeRequest, response);
@@ -247,8 +256,8 @@ export const GET: APIRoute = async ({ request, url }) => {
       cacheLog("IMAGE_ORIGIN_FETCH", { sourceUrl: candidate, profile: profile.name, width: profile.width, quality: profile.quality });
       const upstream = await fetchOptimizedImage(candidate, profile);
       lastStatus = upstream.status;
-      const contentType = upstream.headers.get("content-type") || "";
-      if (!upstream.ok || !contentType.toLowerCase().startsWith("image/webp")) {
+      const contentType = usableImageContentType(upstream.headers.get("content-type") || "");
+      if (!upstream.ok || !contentType) {
         cacheLog("IMAGE_OPTIMIZE_FAIL", { sourceUrl: candidate, status: upstream.status, contentType, profile: profile.name });
         continue;
       }
@@ -260,7 +269,7 @@ export const GET: APIRoute = async ({ request, url }) => {
       }
 
       cacheLog("IMAGE_OPTIMIZE_OK", { sourceUrl: candidate, profile: profile.name, bytes: body.byteLength });
-      const { etag, skipped } = await writeBinaryCache("images", key, body, "image/webp", candidate);
+      const { etag, skipped } = await writeBinaryCache("images", key, body, contentType, candidate);
       if (ifNoneMatch && ifNoneMatch.includes(etag)) return notModified(etag);
 
       const response = new Response(body, {
@@ -268,7 +277,8 @@ export const GET: APIRoute = async ({ request, url }) => {
           cacheStatus: skipped ? "BYPASS" : "MISS",
           sourceUrl: candidate,
           profile: profile.name,
-          etag
+          etag,
+          contentType
         })
       });
       await putEdgeCache(edgeRequest, response);

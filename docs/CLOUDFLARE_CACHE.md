@@ -75,7 +75,7 @@ The endpoint allows only `POST`, returns `401` for missing or invalid tokens, an
 
 ## Image cache profiles
 
-The image proxy writes only fixed WebP profiles to R2. Width, quality, format, and legacy `w=`, `q=`, `width=`, or `quality=` params do not create arbitrary R2 objects.
+The image proxy writes only fixed profile keys to R2. It prefers Cloudflare-transformed WebP when available, but may store a valid upstream JPEG, PNG, AVIF, or WebP response under the same fixed profile key when transform output is unavailable. Width, quality, format, and legacy `w=`, `q=`, `width=`, or `quality=` params do not create arbitrary R2 objects.
 
 R2 key format:
 
@@ -92,4 +92,4 @@ Allowed profiles:
 - `thumb-mobile`: 320px, quality 65
 - `thumb-desktop`: 480px, quality 70
 
-New image responses flow through edge cache, then R2, then OPhim origin. Failed, empty, or non-WebP optimized responses are not written to R2.
+New image responses flow through edge cache, then R2, then OPhim origin. Failed, empty, or non-image responses are not written to R2.
